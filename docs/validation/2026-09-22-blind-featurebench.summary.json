@@ -1,0 +1,105 @@
+{
+  "record_kind": "sealed-fresh-context-subagent-development-check",
+  "tripleteam_pi_benchmark_result": false,
+  "date": "2026-09-22",
+  "instance_id": "pypa__packaging.013f3b03.test_metadata.e00b5801.lv1",
+  "official_instance_summary": {
+    "n_attempt": 1,
+    "patch_is_None": false,
+    "patch_exists": true,
+    "patch_successfully_applied": true,
+    "resolved": false,
+    "pass_rate": 0.966,
+    "featurebench_eval_completed": true,
+    "featurebench_eval_completed_at": "2026-09-22T17:49:14.103560"
+  },
+  "test_counts": {
+    "FAIL_TO_PASS": {
+      "success": 284,
+      "failure": 10
+    },
+    "PASS_TO_PASS": {
+      "success": 3508,
+      "failure": 0
+    }
+  },
+  "official_aggregate": {
+    "n_attempt": 1,
+    "total_instances": 1,
+    "submitted_instances": 1,
+    "completed_instances": 1,
+    "resolved_instances": 0,
+    "unresolved_instances": 1,
+    "not_applied_patch_empty_instances": 0,
+    "not_applied_patch_other_instances": 0,
+    "error_instances": 0,
+    "resolved_rate": 0.0,
+    "pass_rate": 0.966
+  },
+  "provenance": {
+    "baseline_commit": "fe8c0f2fb774f328e348fa78da1db944860fb6df",
+    "submitted_tree": "a20df4ce6a7eb61504fa399ec666a77971192136",
+    "patch_sha256": "c1c725ce01ed6dfb392d54fd1ad230da681bf81087a3a7fd940db8b2ff3aa491",
+    "solver_report_sha256": "8adc44813a8567e2017d4ffdf19a77f2f3d0eb673a1a7b250d58258c913319ce",
+    "harness_commit": "8d4e347ec57546685c5a87e8676bf575db022ea6",
+    "harness_archive_sha256": "65e0f18919ba91060d85fb9e2c0b46e815f43c3551b729103e4b350a45affc08",
+    "dataset_revision": "76b4a4566e04f4bcc13c35125d4f301791efa736",
+    "image_digest": "sha256:96b12548b35b5983ac1dab9a101b4a49946fceb6a05c97690cd942ff014be916",
+    "artifacts": {
+      "prediction_jsonl": {
+        "path": "/tmp/tripleteam-featurebench-eval-20260922/results/predictions.jsonl",
+        "sha256": "6cce11b9fd9c614f233b4e474a41610a073b1d57c4101e9c9407d10cb944e0b8"
+      },
+      "official_instance_report": {
+        "path": "/tmp/tripleteam-featurebench-eval-20260922/results/eval_outputs/pypa__packaging.013f3b03.test_metadata.e00b5801.lv1/attempt-1/report.json",
+        "sha256": "ad1a3f510f7a04267653e15cc49824a94d09b97e3bb37a6a6da1b37219ba4b09"
+      },
+      "official_summary_report": {
+        "path": "/tmp/tripleteam-featurebench-eval-20260922/results/report.json",
+        "sha256": "6285a070959a65e3732d9db01226b0fe505fac592ac92ecb2d116357b84c072a"
+      },
+      "official_cli_log": {
+        "path": "/tmp/tripleteam-featurebench-eval-20260922/official-cli.log",
+        "sha256": "9a9e9aabf84817e5b74ebeb3c730b5eb2273a290229514bfa9b89e11e9e1abe4"
+      },
+      "environment_lock": {
+        "path": "/tmp/tripleteam-featurebench-eval-20260922/FeatureBench-8d4e347ec57546685c5a87e8676bf575db022ea6/uv.lock",
+        "sha256": "4f01e56e2277d5b2ca248428be91ef1ead0e1bb900e74311fb9927429b7b86f1"
+      },
+      "exported_locked_requirements": {
+        "path": "/tmp/tripleteam-featurebench-eval-20260922/locked-requirements.txt",
+        "sha256": "630ba18d96fc4997865dfc90f97b4e3cb15e7a4855ad8fd440d043cc81d50d09"
+      }
+    },
+    "evaluator_command": [
+      ".venv/bin/python",
+      "-m",
+      "featurebench.cli",
+      "eval",
+      "-p",
+      "/tmp/tripleteam-featurebench-eval-20260922/results/predictions.jsonl",
+      "--data-version",
+      "76b4a4566e04f4bcc13c35125d4f301791efa736",
+      "--split",
+      "fast",
+      "--include-failed",
+      "--n-concurrent",
+      "1",
+      "--task-id",
+      "pypa__packaging.013f3b03.test_metadata.e00b5801.lv1"
+    ],
+    "evaluator_python": "3.13.15",
+    "test_python": "3.10.19",
+    "test_pytest": "9.0.1",
+    "dependency_install": "Frozen uv.lock export, exact package versions and require-hashes, PyPI transport; original mirror failed TLS. Official harness source and uv.lock unchanged.",
+    "final_submission_count": 1,
+    "gold_solution_inspected": false,
+    "heldout_evaluation_after_submission_sealed": true
+  },
+  "limitations": [
+    "Fresh conversation context and instructed read boundaries, without OS-enforced isolation.",
+    "One sealed submission; no hidden-feedback repair or resubmission.",
+    "No Pi execution, product-comparison result or complete inference-cost ledger.",
+    "This instance must be excluded from future unseen holdout results."
+  ]
+}

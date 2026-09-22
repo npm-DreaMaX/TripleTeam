@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1150" height="780" viewBox="0 0 1150 780" role="img" aria-labelledby="title desc">
+<title id="title">TripleTeam terminal workspace</title><desc id="desc">The actual dashboard renderer displaying labeled sample data. No benchmark or performance result is shown.</desc>
+<rect width="1150" height="780" rx="16" fill="#0b1218"/>
+<path d="M0 47H1150" stroke="#304451"/>
+<g><circle cx="25" cy="24" r="5" fill="#FF9292"/><circle cx="43" cy="24" r="5" fill="#F1CD7B"/><circle cx="61" cy="24" r="5" fill="#59E3BB"/></g>
+<text x="575" y="29" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#a1b5bf">tripleteam demo · interactive UI preview</text>
+<g font-family="JetBrains Mono, DejaVu Sans Mono, Consolas, monospace" font-size="15.5" xml:space="preserve"><text x="14.0" y="77" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="77" fill="rgb(89,227,187)" font-weight="600">▰▰▰  TripleTeam</text>
+<text x="172.1" y="77" fill="#edf5f4" font-weight="400">                                                                             </text>
+<text x="888.2" y="77" fill="rgb(241,205,123)" font-weight="400">PREVIEW / SAMPLE DATA</text>
+<text x="14.0" y="100" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="100" fill="rgb(161,181,191)" font-weight="400">~/workspace/atlas</text>
+<text x="14.0" y="123" fill="#edf5f4" font-weight="400">  </text>
+<text x="14.0" y="146" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="146" fill="rgb(237,245,244)" font-weight="600">Build a resumable export workflow across API, workers and SDK.</text>
+<text x="14.0" y="169" fill="#edf5f4" font-weight="400">  </text>
+<text x="14.0" y="192" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="192" fill="rgb(89,227,187)" font-weight="600">▸ 1 Overview</text>
+<text x="144.2" y="192" fill="#edf5f4" font-weight="400">     </text>
+<text x="190.7" y="192" fill="rgb(161,181,191)" font-weight="400">  2 Tasks</text>
+<text x="274.4" y="192" fill="#edf5f4" font-weight="400">     </text>
+<text x="320.9" y="192" fill="rgb(161,181,191)" font-weight="400">  3 Activity</text>
+<text x="14.0" y="215" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="215" fill="rgb(48,68,81)" font-weight="400">────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</text>
+<text x="14.0" y="238" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="238" fill="rgb(237,245,244)" font-weight="600">2/5 accepted</text>
+<text x="144.2" y="238" fill="rgb(48,68,81)" font-weight="400">    /    </text>
+<text x="227.9" y="238" fill="rgb(237,245,244)" font-weight="600">2 active tasks</text>
+<text x="358.1" y="238" fill="rgb(48,68,81)" font-weight="400">    /    </text>
+<text x="441.8" y="238" fill="rgb(237,245,244)" font-weight="600">— preview</text>
+<text x="14.0" y="261" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="261" fill="rgb(161,181,191)" font-weight="400">ADAPTIVE  ·  4 writer slots  ·  no API calls</text>
+<text x="14.0" y="284" fill="#edf5f4" font-weight="400">  </text>
+<text x="14.0" y="307" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="307" fill="rgb(48,68,81)" font-weight="400">╭─ TASKS ─────────────────────────────────────────────────────────╮</text>
+<text x="655.7" y="307" fill="#edf5f4" font-weight="400">  </text>
+<text x="674.3" y="307" fill="rgb(48,68,81)" font-weight="400">╭─ COORDINATION ──────────────────────────────╮</text>
+<text x="14.0" y="330" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="330" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="41.9" y="330" fill="#edf5f4" font-weight="400"> </text>
+<text x="51.2" y="330" fill="rgb(89,227,187)" font-weight="400">+ ACCEPTED   </text>
+<text x="172.1" y="330" fill="#edf5f4" font-weight="400">Define and verify the export contract              </text>
+<text x="646.4" y="330" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="655.7" y="330" fill="#edf5f4" font-weight="400">  </text>
+<text x="674.3" y="330" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="683.6" y="330" fill="#edf5f4" font-weight="400"> </text>
+<text x="692.9" y="330" fill="rgb(89,227,187)" font-weight="600">PARALLEL_TASKS</text>
+<text x="823.1" y="330" fill="#edf5f4" font-weight="400">                              </text>
+<text x="1102.1" y="330" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="14.0" y="353" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="353" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="41.9" y="353" fill="#edf5f4" font-weight="400"> </text>
+<text x="51.2" y="353" fill="rgb(89,227,187)" font-weight="400">+ ACCEPTED   </text>
+<text x="172.1" y="353" fill="#edf5f4" font-weight="400">Persist resumable job checkpoints                  </text>
+<text x="646.4" y="353" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="655.7" y="353" fill="#edf5f4" font-weight="400">  </text>
+<text x="674.3" y="353" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="683.6" y="353" fill="#edf5f4" font-weight="400"> The export contract is verified. API and    </text>
+<text x="1102.1" y="353" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="14.0" y="376" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="376" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="41.9" y="376" fill="#edf5f4" font-weight="400"> </text>
+<text x="51.2" y="376" fill="rgb(134,185,255)" font-weight="400">&gt; ACTIVE     </text>
+<text x="172.1" y="376" fill="#edf5f4" font-weight="400">Implement the export API                           </text>
+<text x="646.4" y="376" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="655.7" y="376" fill="#edf5f4" font-weight="400">  </text>
+<text x="674.3" y="376" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="683.6" y="376" fill="#edf5f4" font-weight="400"> SDK scopes are independent; implementation  </text>
+<text x="1102.1" y="376" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="14.0" y="399" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="399" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="41.9" y="399" fill="#edf5f4" font-weight="400"> </text>
+<text x="51.2" y="399" fill="rgb(134,185,255)" font-weight="400">&gt; ACTIVE     </text>
+<text x="172.1" y="399" fill="#edf5f4" font-weight="400">Add SDK progress and resume support                </text>
+<text x="646.4" y="399" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="655.7" y="399" fill="#edf5f4" font-weight="400">  </text>
+<text x="674.3" y="399" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="683.6" y="399" fill="#edf5f4" font-weight="400"> can proceed in parallel.                    </text>
+<text x="1102.1" y="399" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="14.0" y="422" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="422" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="41.9" y="422" fill="#edf5f4" font-weight="400"> </text>
+<text x="51.2" y="422" fill="rgb(161,181,191)" font-weight="400">· WAITING    </text>
+<text x="172.1" y="422" fill="#edf5f4" font-weight="400">Verify the complete export workflow                </text>
+<text x="646.4" y="422" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="655.7" y="422" fill="#edf5f4" font-weight="400">  </text>
+<text x="674.3" y="422" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="683.6" y="422" fill="#edf5f4" font-weight="400">                                             </text>
+<text x="1102.1" y="422" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="14.0" y="445" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="445" fill="rgb(48,68,81)" font-weight="400">╰─────────────────────────────────────────────────────────────────╯</text>
+<text x="655.7" y="445" fill="#edf5f4" font-weight="400">  </text>
+<text x="674.3" y="445" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="683.6" y="445" fill="#edf5f4" font-weight="400"> </text>
+<text x="692.9" y="445" fill="rgb(161,181,191)" font-weight="400">2/2 contracts satisfied</text>
+<text x="906.8" y="445" fill="#edf5f4" font-weight="400">                     </text>
+<text x="1102.1" y="445" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="14.0" y="468" fill="#edf5f4" font-weight="400">                                                                       </text>
+<text x="674.3" y="468" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="683.6" y="468" fill="#edf5f4" font-weight="400"> </text>
+<text x="692.9" y="468" fill="rgb(161,181,191)" font-weight="400">6 passed  ·  0 failed  ·  1 running</text>
+<text x="1018.4" y="468" fill="#edf5f4" font-weight="400">         </text>
+<text x="1102.1" y="468" fill="rgb(48,68,81)" font-weight="400">│</text>
+<text x="14.0" y="491" fill="#edf5f4" font-weight="400">                                                                       </text>
+<text x="674.3" y="491" fill="rgb(48,68,81)" font-weight="400">╰─────────────────────────────────────────────╯</text>
+<text x="14.0" y="514" fill="#edf5f4" font-weight="400">  </text>
+<text x="14.0" y="537" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="537" fill="rgb(161,181,191)" font-weight="400">LATEST ACTIVITY</text>
+<text x="14.0" y="560" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="560" fill="rgb(161,181,191)" font-weight="400">12:00:00  </text>
+<text x="125.6" y="560" fill="rgb(237,245,244)" font-weight="400">TASK_STARTED</text>
+<text x="14.0" y="583" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="583" fill="rgb(161,181,191)" font-weight="400">  API and SDK implementations started in isolated worktrees</text>
+<text x="14.0" y="606" fill="#edf5f4" font-weight="400">  </text>
+<text x="14.0" y="629" fill="#edf5f4" font-weight="400">  </text>
+<text x="14.0" y="652" fill="#edf5f4" font-weight="400">  </text>
+<text x="14.0" y="675" fill="#edf5f4" font-weight="400">  </text>
+<text x="14.0" y="698" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="698" fill="rgb(48,68,81)" font-weight="400">────────────────────────────────────────────────────────────────────────────────────────────────────────────────────</text>
+<text x="14.0" y="721" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="721" fill="rgb(161,181,191)" font-weight="400">Sample workspace · no model calls or files changed</text>
+<text x="14.0" y="744" fill="#edf5f4" font-weight="400">  </text>
+<text x="32.6" y="744" fill="rgb(161,181,191)" font-weight="400">1/2/3 views   j/k scroll   q close view</text></g></svg>

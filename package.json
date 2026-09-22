@@ -1,0 +1,73 @@
+{
+	"name": "tripleteam",
+	"version": "1.0.0",
+	"private": true,
+	"description": "TripleTeam: verified, recoverable runtime for long-horizon agentic software engineering on vendored Pi",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/npm-DreaMaX/TripleTeam.git"
+	},
+	"homepage": "https://github.com/npm-DreaMaX/TripleTeam#readme",
+	"bugs": {
+		"url": "https://github.com/npm-DreaMaX/TripleTeam/issues"
+	},
+	"keywords": [
+		"agentic-software-engineering",
+		"multi-agent",
+		"cli",
+		"verification",
+		"coding-agents"
+	],
+	"files": [
+		"dist",
+		"README.md",
+		"README.zh-CN.md",
+		"docs",
+		"examples",
+		"LICENSE",
+		"THIRD_PARTY_NOTICES.md",
+		"UPSTREAM.md",
+		"REAL_E2E_VALIDATION.md",
+		"调研.md",
+		"vendor/pi"
+	],
+	"type": "module",
+	"bin": {
+		"tripleteam": "./dist/cli.js",
+		"tripleteamd": "./dist/daemon.js",
+		"tripleteam-benchmark": "./dist/benchmark.js"
+	},
+	"scripts": {
+		"build": "esbuild src/cli/main.ts --bundle --platform=node --format=esm --external:@earendil-works/* --outfile=dist/cli.js && esbuild src/daemon/main.ts --bundle --platform=node --format=esm --external:@earendil-works/* --outfile=dist/daemon.js && esbuild src/runtime/pi/control-extension.ts --bundle --platform=node --format=esm --external:@earendil-works/* --outfile=dist/control-extension.js && esbuild src/benchmark/main.ts --bundle --platform=node --format=esm --external:@earendil-works/* --outfile=dist/benchmark.js",
+		"check": "npm run typecheck && npm run lint",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"start": "tsx src/cli/main.ts",
+		"test": "node --import tsx --test test/**/*.test.ts",
+		"typecheck": "tsc --noEmit",
+		"benchmark": "tsx src/benchmark/main.ts",
+		"preview:assets": "tsx scripts/render-preview.ts",
+		"package:source": "npm run build && python3 scripts/package-source.py"
+	},
+	"engines": {
+		"node": ">=22.19.0"
+	},
+	"dependencies": {
+		"@earendil-works/chord": "file:vendor/pi/chord",
+		"@earendil-works/pi-agent-core": "file:vendor/pi/pi-agent-core",
+		"@earendil-works/pi-ai": "file:vendor/pi/pi-ai",
+		"@earendil-works/pi-coding-agent": "file:vendor/pi/pi-coding-agent",
+		"@earendil-works/pi-session-backend-sqlite-node": "file:vendor/pi/pi-session-backend-sqlite-node",
+		"@earendil-works/pi-telemetry": "file:vendor/pi/pi-telemetry",
+		"@earendil-works/pi-tui": "file:vendor/pi/pi-tui",
+		"@mjakl/pi-subagent": "https://github.com/mjakl/pi-subagent/archive/8e1b40b51440804246e312ef2a27a6399ded3186.tar.gz"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.3.5",
+		"@types/node": "22.19.19",
+		"esbuild": "0.28.2",
+		"tsx": "4.22.1",
+		"typescript": "5.9.3"
+	},
+	"license": "MIT"
+}

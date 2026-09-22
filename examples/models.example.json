@@ -1,0 +1,28 @@
+{
+  "providers": {
+    "reasoning-api": {
+      "baseUrl": "https://YOUR_REASONING_HOST/v1",
+      "api": "openai-completions",
+      "apiKey": "$TRIPLETEAM_REASONING_API_KEY",
+      "authHeader": true,
+      "models": [{ "id": "YOUR_REASONING_MODEL_ID", "reasoning": true, "input": ["text"], "contextWindow": 128000, "maxTokens": 16384 }]
+    },
+    "coding-api": {
+      "baseUrl": "https://YOUR_CODING_HOST/v1",
+      "api": "openai-completions",
+      "apiKey": "$TRIPLETEAM_CODING_API_KEY",
+      "authHeader": true,
+      "models": [
+        { "id": "YOUR_CODING_MODEL_ID", "reasoning": true, "input": ["text"], "contextWindow": 128000, "maxTokens": 16384 },
+        { "id": "YOUR_FAST_MODEL_ID", "reasoning": true, "input": ["text"], "contextWindow": 128000, "maxTokens": 8192 }
+      ]
+    },
+    "review-api": {
+      "baseUrl": "https://YOUR_REVIEW_HOST/v1",
+      "api": "openai-completions",
+      "apiKey": "$TRIPLETEAM_REVIEW_API_KEY",
+      "authHeader": true,
+      "models": [{ "id": "YOUR_REVIEW_MODEL_ID", "reasoning": true, "input": ["text"], "contextWindow": 128000, "maxTokens": 16384 }]
+    }
+  }
+}

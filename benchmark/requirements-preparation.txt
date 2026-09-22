@@ -1,0 +1,2 @@
+# Used only by the trusted, offline benchmark data preparer.
+pyarrow==19.0.1

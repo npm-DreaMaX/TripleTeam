@@ -1,0 +1,49 @@
+{
+  "reviewedRevision": "4690901a390878593aa41e2fd25b98e8831b9578",
+  "observations": [
+    {
+      "id": "R1",
+      "check": ["git", "diff", "--check", "$RUN_INPUT", "$SUBJECT"],
+      "evidenceClass": "BEHAVIORAL",
+      "delivery": "VERIFIED_DELIVERY"
+    },
+    {
+      "id": "R2",
+      "delivery": "VERIFIED_DELIVERY",
+      "testedValue": "good",
+      "deliveredValue": "bad"
+    },
+    {
+      "id": "R3",
+      "separateTasksFirstFailure": [
+        { "occurrence": 1, "disposition": "RETRY" },
+        { "occurrence": 2, "disposition": "REPLAN" },
+        { "occurrence": 3, "disposition": "BLOCK" }
+      ]
+    },
+    {
+      "id": "R4",
+      "sourceScope": ["src"],
+      "automaticallyAcceptedChildScope": ["."]
+    },
+    {
+      "id": "R5",
+      "after": "proposal -> decision request -> blockRun -> user accepts",
+      "error": "STALE_TASK_PROPOSAL"
+    },
+    {
+      "id": "R6",
+      "selected": "A",
+      "request": "DECIDED",
+      "task": "BLOCKED",
+      "mayContinue": false,
+      "answerMessages": 0
+    },
+    {
+      "id": "R7",
+      "first": "FAILED",
+      "second": "DUPLICATE_EXPLORATION",
+      "actualExplorerCalls": 1
+    }
+  ]
+}

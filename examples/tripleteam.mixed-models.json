@@ -1,0 +1,20 @@
+{
+  "execution": {
+    "policy": "ADAPTIVE",
+    "decisionMode": "interactive",
+    "provider": "coding-api",
+    "model": "YOUR_CODING_MODEL_ID",
+    "reasoning": "medium",
+    "maxParallelism": 4,
+    "maxExecutions": 64,
+    "tokenLimit": 200000,
+    "deadlineMs": 3600000,
+    "roles": {
+      "planner": { "provider": "reasoning-api", "model": "YOUR_REASONING_MODEL_ID", "reasoning": "high" },
+      "explorer": { "provider": "coding-api", "model": "YOUR_FAST_MODEL_ID", "reasoning": "low" },
+      "implementer": { "provider": "coding-api", "model": "YOUR_CODING_MODEL_ID", "reasoning": "medium" },
+      "reviewer": { "provider": "review-api", "model": "YOUR_REVIEW_MODEL_ID", "reasoning": "high" }
+    }
+  },
+  "reviewRequiredFor": ["MEDIUM", "HIGH"]
+}
