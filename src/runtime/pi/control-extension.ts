@@ -1,5 +1,6 @@
 import { Type } from "@earendil-works/pi-ai";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { registerWorkspaceSearchPolicy } from "./search-policy.ts";
 
 const controlUrl = process.env.TRIPLETEAM_CONTROL_URL;
 const controlToken = process.env.TRIPLETEAM_CONTROL_TOKEN;
@@ -99,6 +100,7 @@ const TaskChangeSet = Type.Object(
 );
 
 export default function controlExtension(pi: ExtensionAPI) {
+	registerWorkspaceSearchPolicy(pi);
 	if (!controlUrl || !controlToken) return;
 	pi.registerTool(
 		defineTool({

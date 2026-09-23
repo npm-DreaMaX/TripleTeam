@@ -1,4 +1,4 @@
-import { acceptancePolicyForRun, type ProjectConfig } from "../config/project.ts";
+import { acceptancePolicyForRun, type ProjectConfig, taskAcceptanceForScope } from "../config/project.ts";
 import type { ControlCatalog, TaskChangeProposalRecord } from "./catalog.ts";
 import type { ControlKernel, TaskChangeReference, TaskChangeSet } from "./kernel.ts";
 import { scopeContains } from "./scope.ts";
@@ -114,11 +114,7 @@ export class BoundedTaskProposalPolicy {
 					reason: `added task ${addition.key} expands scope or drops a source constraint`,
 				};
 			}
-			const expectedContract = {
-				candidateChecks: policy.candidateChecks,
-				integrationChecks: policy.integrationChecks,
-				requireReview: policy.reviewRequiredFor.includes(addition.riskClass),
-			};
+			const expectedContract = taskAcceptanceForScope(policy, addition.scope as string[], addition.riskClass);
 			if (!sameJson(addition.acceptanceContract, expectedContract)) {
 				return {
 					accept: false,

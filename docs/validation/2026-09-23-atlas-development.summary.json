@@ -1,0 +1,830 @@
+{
+  "schema": "tripleteam-atlas-development-validation/v1",
+  "date": "2026-09-23",
+  "classification": "CONTROLLED_PUBLIC_SPECIFICATION_DEVELOPMENT_TRIALS_NOT_BENCHMARK",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "protocol": {
+    "realPiInference": true,
+    "publicTaskAndTests": true,
+    "hiddenEvaluation": false,
+    "runtimeChangesBetweenTrials": true,
+    "manualSolutionEdits": false,
+    "humanAnswersDuringInference": 0,
+    "allTrialsRetained": true,
+    "costScope": "Runtime-reported estimates; incomplete usage is a lower bound, not reconciled provider invoices"
+  },
+  "trials": [
+    {
+      "trial": "v1",
+      "runId": "f929449b-9a7f-4aa8-b083-7a86df617b25",
+      "repository": "/tmp/tripleteam-atlas-20260923",
+      "inputCommit": "dd4500cd407a84dfd3d1a4dca3b5c45e9f5aee0f",
+      "inputTree": "0c7a2f3c51e0d47e48bd1ab5f21d893a64a6b900",
+      "finalCommit": "dd4500cd407a84dfd3d1a4dca3b5c45e9f5aee0f",
+      "finalTree": "0c7a2f3c51e0d47e48bd1ab5f21d893a64a6b900",
+      "state": "BLOCKED",
+      "result": "BLOCKED",
+      "terminalReason": "Run token budget exhausted or reserved",
+      "executionPolicy": {
+        "decisionMode": "noninteractive",
+        "policy": "ADAPTIVE",
+        "maxParallelism": 3,
+        "maxExecutions": 30,
+        "costLimitUsd": 5,
+        "tokenLimit": 400000,
+        "deadlineMs": 1200000,
+        "reservationUsd": 1,
+        "reservationTokens": 32000,
+        "maxFinalRepairs": 2,
+        "maxExplorationAttempts": 2,
+        "maxPlanningTokens": 250000,
+        "maxPlanningToolCalls": 24,
+        "maxPlanningMs": 120000,
+        "enableContracts": true,
+        "enableFailureAdaptation": true,
+        "enableComputeAllocation": true,
+        "enableEvidenceReuse": true,
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "reasoning": "high"
+      },
+      "assurancePolicy": {
+        "mode": "adaptive",
+        "maxObligations": 8,
+        "maxProbes": 3,
+        "maxDesignAttempts": 2,
+        "maxDesignTokens": 300000,
+        "maxDesignToolCalls": 40,
+        "maxDesignMs": 180000,
+        "repetitions": 2,
+        "probeTimeoutMs": 30000,
+        "isolation": {
+          "kind": "DOCKER",
+          "image": "sha256:7ce4b6dfe35e55397b7cda544f8a13f191b7ae28dc5aad71fe664dbc9bc2623f",
+          "memoryMb": 2048,
+          "cpus": 2
+        }
+      },
+      "runtimeHashes": null,
+      "tasks": [
+        {
+          "state": "BLOCKED",
+          "title": "Implement the asynchronous report export workflow in SPEC.md across contracts, jobs, HTTP API and SDK. Preserve all exis"
+        }
+      ],
+      "checks": [
+        {
+          "subject": "RUN",
+          "state": "PASSED",
+          "count": 4
+        }
+      ],
+      "failures": [
+        {
+          "kind": "PLANNING_FAILURE",
+          "attempt": null,
+          "reason": "Pi search tool preflight failed for grep, find (offline, 30s timeout). Install ripgrep (rg) and fd/fdfind, or prepare Pi's tool cache before starting an Agent.\nfd is not available and could not be downloaded\nSearch subprocess exited with 1"
+        },
+        {
+          "kind": "PLANNING_FALLBACK",
+          "attempt": null,
+          "reason": "Planning exhausted its compute allocation"
+        }
+      ],
+      "usageByPhase": [
+        {
+          "phase": "BASELINE:api-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1456
+        },
+        {
+          "phase": "BASELINE:client-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1534
+        },
+        {
+          "phase": "BASELINE:contracts-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1544
+        },
+        {
+          "phase": "BASELINE:jobs-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1274
+        },
+        {
+          "phase": "IMPLEMENT",
+          "records": 1,
+          "inputTokens": 13436,
+          "outputTokens": 15985,
+          "cacheReadTokens": 298880,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.025006079999999997,
+          "durationMs": 77616
+        },
+        {
+          "phase": "PLAN",
+          "records": 1,
+          "inputTokens": 10067,
+          "outputTokens": 12677,
+          "cacheReadTokens": 42752,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.018489012,
+          "durationMs": 62973
+        },
+        {
+          "phase": "PLAN_CORRECTION",
+          "records": 1,
+          "inputTokens": 160,
+          "outputTokens": 2365,
+          "cacheReadTokens": 22528,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.003021168000000001,
+          "durationMs": 7543
+        },
+        {
+          "phase": "SINGLE",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 78617
+        }
+      ],
+      "observedTokens": 418850,
+      "estimatedCostUsd": 0.046516260000000004,
+      "incompleteUsageRecords": 2,
+      "diagnosticInterventions": [
+        "Copied missing Pi fd/rg tool cache, then explicitly continued the same run"
+      ],
+      "providerAccountError": null
+    },
+    {
+      "trial": "v2",
+      "runId": "d26845dc-0046-486d-9fcf-568597e6a75f",
+      "repository": "/tmp/tripleteam-atlas-v2-20260923",
+      "inputCommit": "5cad3f095ff8124442a2266d38869418693d2420",
+      "inputTree": "9f304a191469609502911c425a9cf4ce03cdabe7",
+      "finalCommit": "5cad3f095ff8124442a2266d38869418693d2420",
+      "finalTree": "9f304a191469609502911c425a9cf4ce03cdabe7",
+      "state": "BLOCKED",
+      "result": "BLOCKED",
+      "terminalReason": "No runnable tasks remain; at least one task or dependency is blocked",
+      "executionPolicy": {
+        "decisionMode": "noninteractive",
+        "policy": "ADAPTIVE",
+        "maxParallelism": 3,
+        "maxExecutions": 30,
+        "costLimitUsd": 5,
+        "tokenLimit": 2000000,
+        "deadlineMs": 1200000,
+        "reservationUsd": 1,
+        "reservationTokens": 32000,
+        "maxFinalRepairs": 2,
+        "maxExplorationAttempts": 2,
+        "maxPlanningTokens": 250000,
+        "maxPlanningToolCalls": 24,
+        "maxPlanningMs": 120000,
+        "enableContracts": true,
+        "enableFailureAdaptation": true,
+        "enableComputeAllocation": true,
+        "enableEvidenceReuse": true,
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "reasoning": "high"
+      },
+      "assurancePolicy": {
+        "mode": "adaptive",
+        "maxObligations": 8,
+        "maxProbes": 3,
+        "maxDesignAttempts": 2,
+        "maxDesignTokens": 300000,
+        "maxDesignToolCalls": 40,
+        "maxDesignMs": 180000,
+        "repetitions": 2,
+        "probeTimeoutMs": 30000,
+        "isolation": {
+          "kind": "DOCKER",
+          "image": "sha256:7ce4b6dfe35e55397b7cda544f8a13f191b7ae28dc5aad71fe664dbc9bc2623f",
+          "memoryMb": 2048,
+          "cpus": 2
+        }
+      },
+      "runtimeHashes": {
+        "dist/cli.js": "29dcbeedf38530933c1844f0f19fd653c5096367053afc683b3ba087dfc834de",
+        "dist/control-extension.js": "cca05958616581357435206a65ad5f1e55501a9abf331c6e2cb5db98e9ed9971",
+        "src/demo/project.ts": "64a2797105d8c2b2fd8c314367b6b5a152e9e4f933d87fdb27c5e609596cf3b7"
+      },
+      "tasks": [
+        {
+          "state": "BLOCKED",
+          "title": "Asynchronous report export workflow across contracts, jobs, API and SDK"
+        }
+      ],
+      "checks": [
+        {
+          "subject": "RUN",
+          "state": "PASSED",
+          "count": 10
+        }
+      ],
+      "failures": [
+        {
+          "kind": "ASSURANCE_DESIGN_REJECTED",
+          "attempt": 1,
+          "reason": "Unexpected end of JSON input"
+        },
+        {
+          "kind": "ASSURANCE_DESIGN_REJECTED",
+          "attempt": 2,
+          "reason": "Unexpected end of JSON input"
+        }
+      ],
+      "usageByPhase": [
+        {
+          "phase": "BASELINE:api-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 3202
+        },
+        {
+          "phase": "BASELINE:client-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 6090
+        },
+        {
+          "phase": "BASELINE:contracts-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1918
+        },
+        {
+          "phase": "BASELINE:jobs-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 2198
+        },
+        {
+          "phase": "PLAN",
+          "records": 1,
+          "inputTokens": 8324,
+          "outputTokens": 7869,
+          "cacheReadTokens": 33920,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.012143519999999998,
+          "durationMs": 41629
+        },
+        {
+          "phase": "PROBE_CONTROL",
+          "records": 6,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 10686
+        },
+        {
+          "phase": "PROBE_CRITIQUE",
+          "records": 2,
+          "inputTokens": 17542,
+          "outputTokens": 34645,
+          "cacheReadTokens": 54912,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.047166071999999996,
+          "durationMs": 147767
+        },
+        {
+          "phase": "SINGLE",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 250553
+        },
+        {
+          "phase": "SPECIFICATION_DESIGN",
+          "records": 2,
+          "inputTokens": 15370,
+          "outputTokens": 21843,
+          "cacheReadTokens": 69888,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.031241927999999995,
+          "durationMs": 88465
+        }
+      ],
+      "observedTokens": 264313,
+      "estimatedCostUsd": 0.09055152,
+      "incompleteUsageRecords": 0,
+      "diagnosticInterventions": [],
+      "providerAccountError": null
+    },
+    {
+      "trial": "v3",
+      "runId": "c9ec994c-4dc6-47b7-bd44-f70a61092f48",
+      "repository": "/tmp/tripleteam-atlas-v3-20260923",
+      "inputCommit": "d958cfd31ffdcaf7022044f2c3c02ed0ed578e8c",
+      "inputTree": "9df37776e3022a73936183cc9b20b79994272272",
+      "finalCommit": "d958cfd31ffdcaf7022044f2c3c02ed0ed578e8c",
+      "finalTree": "9df37776e3022a73936183cc9b20b79994272272",
+      "state": "BLOCKED",
+      "result": "BLOCKED",
+      "terminalReason": "No runnable tasks remain; at least one task or dependency is blocked",
+      "executionPolicy": {
+        "decisionMode": "noninteractive",
+        "policy": "ADAPTIVE",
+        "maxParallelism": 3,
+        "maxExecutions": 30,
+        "costLimitUsd": 5,
+        "tokenLimit": 2000000,
+        "deadlineMs": 1200000,
+        "reservationUsd": 1,
+        "reservationTokens": 32000,
+        "maxFinalRepairs": 2,
+        "maxExplorationAttempts": 2,
+        "maxPlanningTokens": 250000,
+        "maxPlanningToolCalls": 24,
+        "maxPlanningMs": 120000,
+        "enableContracts": true,
+        "enableFailureAdaptation": true,
+        "enableComputeAllocation": true,
+        "enableEvidenceReuse": true,
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "reasoning": "high"
+      },
+      "assurancePolicy": {
+        "mode": "adaptive",
+        "maxObligations": 8,
+        "maxProbes": 3,
+        "maxDesignAttempts": 2,
+        "maxDesignTokens": 300000,
+        "maxDesignToolCalls": 40,
+        "maxDesignMs": 180000,
+        "repetitions": 2,
+        "probeTimeoutMs": 30000,
+        "isolation": {
+          "kind": "DOCKER",
+          "image": "sha256:7ce4b6dfe35e55397b7cda544f8a13f191b7ae28dc5aad71fe664dbc9bc2623f",
+          "memoryMb": 2048,
+          "cpus": 2
+        }
+      },
+      "runtimeHashes": {
+        "dist/cli.js": "4d2838e1e47df6d8c8639f716655e7e8fea9306a329b858811a8e529693c1767",
+        "dist/control-extension.js": "cca05958616581357435206a65ad5f1e55501a9abf331c6e2cb5db98e9ed9971",
+        "src/demo/project.ts": "baccfa49e8118fc5b62630a4770f963b39d95e0d1c79d32b1a899b4630c03327"
+      },
+      "tasks": [
+        {
+          "state": "BLOCKED",
+          "title": "Define async export contracts and shared thread-safe job store"
+        },
+        {
+          "state": "PROPOSED",
+          "title": "Implement process_pending worker over the shared store"
+        },
+        {
+          "state": "PROPOSED",
+          "title": "Serve asynchronous /exports routes through the shared store"
+        },
+        {
+          "state": "PROPOSED",
+          "title": "Add asynchronous export methods to the SDK"
+        }
+      ],
+      "checks": [
+        {
+          "subject": "RUN",
+          "state": "PASSED",
+          "count": 7
+        }
+      ],
+      "failures": [
+        {
+          "kind": "ASSURANCE_DESIGN_REJECTED",
+          "attempt": 1,
+          "reason": "Invalid verification design JSON: Unexpected end of JSON input"
+        },
+        {
+          "kind": "ASSURANCE_DESIGN_REJECTED",
+          "attempt": 2,
+          "reason": "Independent probe critique: Plan is largely source-grounded (EXPORT_STATES, validate_rows, detached snapshots, row copying, lock-free exporter, shared store, cancel-wins all exercised against real public entrypoints), but it has concrete HIGH-risk coverage gaps and one vacuous check. (1) No obligation or probe covers the store's FAILED transition: process_pending(exporter=fn) where fn raises is never exercised, yet the task explicitly requires the failed transition and SPEC.md states 'Exporter exceptions become job failures'. (2) The positive retry path is untested: no job is ever put into FAILED and retried to PENDING. probe_2 only checks retry on a SUCCEEDED job returns 409, so behavior_6's 'retry changes only FAILED jobs to PENDING, retaining their ID and original input and resetting progress/error' is only half verified; the retention-of-original-input and progress/error reset are unprobed. Corrections: add a probe that submits rows, calls jobs.process_pending(exporter=<function that raises>), asserts state==FAILED and an error field/progress, then dispatch POST /exports/{id}/retry and assert state==PENDING with the same id and original input (progress reset), then jobs.process_pending() and assert state==SUCCEEDED progress==100 and result csv == jobs.export_csv(submitted rows). (3) probe_1's behavior_8 check is vacuous with respect to the obligation: sys.version_info >= (3,11) plus successful imports does not evidence 'standard library only'; replace it with an actual import-graph/AST check that atlas pulls in no non-stdlib top-level modules, or drop behavior_8 from probe_1 instead of claiming coverage. Minor: behavior_3's progress==100 on success and the optional error field are asserted nowhere. The three contrasts do reject their wrong implementations and no assertion falsely rejects a correct implementation, so the deficiencies are missing/weak coverage rather than unsupported expectations."
+        }
+      ],
+      "usageByPhase": [
+        {
+          "phase": "BASELINE:api-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1670
+        },
+        {
+          "phase": "BASELINE:client-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1631
+        },
+        {
+          "phase": "BASELINE:contracts-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1718
+        },
+        {
+          "phase": "BASELINE:jobs-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1652
+        },
+        {
+          "phase": "PLAN",
+          "records": 1,
+          "inputTokens": 10712,
+          "outputTokens": 20339,
+          "cacheReadTokens": 73984,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.028064303999999998,
+          "durationMs": 95152
+        },
+        {
+          "phase": "PROBE_CONTROL",
+          "records": 3,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 6005
+        },
+        {
+          "phase": "PROBE_CRITIQUE",
+          "records": 1,
+          "inputTokens": 8125,
+          "outputTokens": 10699,
+          "cacheReadTokens": 30208,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.015457548,
+          "durationMs": 51171
+        },
+        {
+          "phase": "SINGLE",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 209778
+        },
+        {
+          "phase": "SPECIFICATION_DESIGN",
+          "records": 2,
+          "inputTokens": 14507,
+          "outputTokens": 34947,
+          "cacheReadTokens": 69632,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.046706291999999996,
+          "durationMs": 147664
+        }
+      ],
+      "observedTokens": 273153,
+      "estimatedCostUsd": 0.090228144,
+      "incompleteUsageRecords": 0,
+      "diagnosticInterventions": [],
+      "providerAccountError": null
+    },
+    {
+      "trial": "v4",
+      "runId": "a8c60a71-1817-446c-9d39-f27721469768",
+      "repository": "/tmp/tripleteam-atlas-v4-20260923",
+      "inputCommit": "8880360d1a73198104bec13bea77aa47adff11a8",
+      "inputTree": "95cf96da1d166f022acef53eef3b7ec7c5b2ec37",
+      "finalCommit": "09f1de31271a52299dfaac95bfdc47b61cfffdff",
+      "finalTree": "28e3b6047accf8bf5961342246e44bb7b28d53e4",
+      "state": "BLOCKED",
+      "result": "BLOCKED",
+      "terminalReason": "No runnable tasks remain; at least one task or dependency is blocked",
+      "executionPolicy": {
+        "roles": {
+          "planner": {
+            "reasoning": "medium"
+          },
+          "verifier": {
+            "reasoning": "medium"
+          },
+          "reviewer": {
+            "reasoning": "medium"
+          }
+        },
+        "decisionMode": "noninteractive",
+        "policy": "ADAPTIVE",
+        "maxParallelism": 3,
+        "maxExecutions": 30,
+        "costLimitUsd": 5,
+        "tokenLimit": 2000000,
+        "deadlineMs": 1200000,
+        "reservationUsd": 1,
+        "reservationTokens": 32000,
+        "maxFinalRepairs": 2,
+        "maxExplorationAttempts": 2,
+        "maxPlanningTokens": 250000,
+        "maxPlanningToolCalls": 24,
+        "maxPlanningMs": 120000,
+        "enableContracts": true,
+        "enableFailureAdaptation": true,
+        "enableComputeAllocation": true,
+        "enableEvidenceReuse": true,
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "reasoning": "high"
+      },
+      "assurancePolicy": {
+        "mode": "adaptive",
+        "maxObligations": 8,
+        "maxProbes": 3,
+        "maxDesignAttempts": 2,
+        "maxDesignTokens": 300000,
+        "maxDesignToolCalls": 40,
+        "maxDesignMs": 180000,
+        "repetitions": 2,
+        "probeTimeoutMs": 30000,
+        "isolation": {
+          "kind": "DOCKER",
+          "image": "sha256:7ce4b6dfe35e55397b7cda544f8a13f191b7ae28dc5aad71fe664dbc9bc2623f",
+          "memoryMb": 2048,
+          "cpus": 2
+        }
+      },
+      "runtimeHashes": {
+        "dist/cli.js": "646afe1a2e493f12a2c0b5483e32038845841f95c5561c870478f1ed7094203b",
+        "dist/control-extension.js": "cca05958616581357435206a65ad5f1e55501a9abf331c6e2cb5db98e9ed9971",
+        ".gitignore": "a0a3644702e1b01cda1926cf1bb44716c2e534bd2d2db903303a334f41312adf"
+      },
+      "tasks": [
+        {
+          "state": "ACCEPTED",
+          "title": "Define shared export state contract"
+        },
+        {
+          "state": "BLOCKED",
+          "title": "Implement thread-safe export job store and worker"
+        },
+        {
+          "state": "PROPOSED",
+          "title": "Add async export routes to dispatch and HTTP handler"
+        },
+        {
+          "state": "BLOCKED",
+          "title": "Extend SDK with asynchronous export methods"
+        }
+      ],
+      "checks": [
+        {
+          "subject": "CANDIDATE",
+          "state": "PASSED",
+          "count": 1
+        },
+        {
+          "subject": "INTEGRATION",
+          "state": "PASSED",
+          "count": 1
+        },
+        {
+          "subject": "RUN",
+          "state": "PASSED",
+          "count": 10
+        }
+      ],
+      "failures": [
+        {
+          "kind": "ASSURANCE_DESIGN_REJECTED",
+          "attempt": 1,
+          "reason": "Independent probe critique: Decisive defect: probe_3 asserts `\"error\" not in after`, an unsupported expectation. SPEC says snapshots \"may include an error\" and only requires retry to \"reset progress/error\"; clearing the error to `None` is compliant, and the frozen tests never require the key's absence. The probe can therefore falsely reject a correct candidate. Correction: assert `after.get(\"error\") is None` (accept absent or null). Obligations and probes 1–2 are source-grounded, use only in-scope atlas.jobs entry points, check exact CSV/input copying, and their contrasts reject the wrong behavior without requiring downstream APIs."
+        },
+        {
+          "kind": "ASSURANCE_DESIGN_REJECTED",
+          "attempt": 2,
+          "reason": "Pi assistant stopped with error; the execution did not produce a completed response"
+        }
+      ],
+      "usageByPhase": [
+        {
+          "phase": "BASELINE:api-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 7956
+        },
+        {
+          "phase": "BASELINE:client-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 4989
+        },
+        {
+          "phase": "BASELINE:contracts-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1994
+        },
+        {
+          "phase": "BASELINE:jobs-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1870
+        },
+        {
+          "phase": "CANDIDATE:candidate-diff-safety",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 61
+        },
+        {
+          "phase": "IMPLEMENT",
+          "records": 4,
+          "inputTokens": 12543,
+          "outputTokens": 5446,
+          "cacheReadTokens": 101888,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.010909428,
+          "durationMs": 37597
+        },
+        {
+          "phase": "INTEGRATION:contracts-regression",
+          "records": 1,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 1955
+        },
+        {
+          "phase": "PLAN",
+          "records": 1,
+          "inputTokens": 9700,
+          "outputTokens": 14428,
+          "cacheReadTokens": 37632,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.020449391999999997,
+          "durationMs": 70357
+        },
+        {
+          "phase": "PLAN_CORRECTION",
+          "records": 1,
+          "inputTokens": 175,
+          "outputTokens": 2732,
+          "cacheReadTokens": 23936,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.0034745160000000004,
+          "durationMs": 8877
+        },
+        {
+          "phase": "PROBE_CONTROL",
+          "records": 6,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 9462
+        },
+        {
+          "phase": "PROBE_CRITIQUE",
+          "records": 2,
+          "inputTokens": 6862,
+          "outputTokens": 10134,
+          "cacheReadTokens": 15744,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.014313863999999999,
+          "durationMs": 51372
+        },
+        {
+          "phase": "REVIEW",
+          "records": 1,
+          "inputTokens": 8596,
+          "outputTokens": 3479,
+          "cacheReadTokens": 35328,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.006965568,
+          "durationMs": 19234
+        },
+        {
+          "phase": "SERIALIZE",
+          "records": 2,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 175798
+        },
+        {
+          "phase": "SINGLE",
+          "records": 3,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "estimatedCostUsd": null,
+          "durationMs": 7938
+        },
+        {
+          "phase": "SPECIFICATION_DESIGN",
+          "records": 2,
+          "inputTokens": 11538,
+          "outputTokens": 12539,
+          "cacheReadTokens": 31616,
+          "cacheWriteTokens": 0,
+          "estimatedCostUsd": 0.018697896,
+          "durationMs": 56261
+        }
+      ],
+      "observedTokens": 344316,
+      "estimatedCostUsd": 0.07481066399999999,
+      "incompleteUsageRecords": 4,
+      "diagnosticInterventions": [],
+      "providerAccountError": "HTTP 402 Insufficient Balance from four Pi assistant error messages; no credential text retained"
+    }
+  ],
+  "totalObservedTokens": 1300632,
+  "totalEstimatedCostUsd": 0.30210658799999995
+}

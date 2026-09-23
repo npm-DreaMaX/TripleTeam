@@ -13,22 +13,34 @@ python3 scripts/package-source.py
 
 Outputs: `release/TripleTeam-source.zip`, `release/TripleTeam-source.tar.gz`, `release/SHA256SUMS`.
 
-## Push a clean project history
+## Update the GitHub repository
 
-Extract the package into a **new directory**. This keeps the existing workspace and its legacy research history intact.
+Clone the destination into a **new directory**, then replace that clone's tracked content with the source snapshot. This starts from the remote history and avoids the earlier `fetch first` rejection caused by creating a separate local history. The archive contains no `.git` directory. Removing the old tracked content in this disposable clone also prevents obsolete source files from surviving the update.
 
 ```bash
-mkdir -p ~/tripleteam-publish
-tar -xzf /home/FangWang/TripleTeam/release/TripleTeam-source.tar.gz -C ~/tripleteam-publish
-cd ~/tripleteam-publish/TripleTeam
-git init -b main
+TRIPLETEAM_PUBLISH_DIR="$(mktemp -d "$HOME/TripleTeam-publish.XXXXXX")"
+git clone https://github.com/npm-DreaMaX/TripleTeam.git "$TRIPLETEAM_PUBLISH_DIR"
+cd "$TRIPLETEAM_PUBLISH_DIR"
+git switch main
+git rm -r --ignore-unmatch -- .
+tar -xzf /home/FangWang/TripleTeam/release/TripleTeam-source.tar.gz --strip-components=1
+git status --short
+git diff --stat
 git add .
-git commit -m "Release TripleTeam: adaptive execution and evidence-backed delivery"
-git remote add origin https://github.com/npm-DreaMaX/TripleTeam.git
+git commit -m "Release TripleTeam: adaptive execution and verified delivery"
 git push -u origin main
 ```
 
-Git may ask for your configured GitHub authentication. If the remote already has commits, push a new branch and open a pull request instead of forcing over existing history:
+The temporary directory is unique; `git rm` applies only to this new clone. Keep API credentials and runtime state outside the publication checkout. Review the changed files before committing.
+
+Git may ask for your configured GitHub authentication. If someone updates `main` after the clone, incorporate that update and retry. Resolve any reported conflicts before continuing:
+
+```bash
+git pull --rebase origin main
+git push origin main
+```
+
+For a pull request instead of a direct `main` update:
 
 ```bash
 git push -u origin HEAD:tripleteam-release

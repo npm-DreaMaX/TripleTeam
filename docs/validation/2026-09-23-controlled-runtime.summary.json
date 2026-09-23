@@ -1,0 +1,240 @@
+{
+  "protocol": "controlled-public-specification-v1",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "priceBasis": "official peak-period estimate checked 2026-09-23, USD per 1M: input .3, output 1.2, cacheRead .006",
+  "humanInterventions": 0,
+  "runs": [
+    {
+      "runId": "213c37cf-0428-48dc-a75c-069dcda8c839",
+      "inputCommit": "51e6bd93d51f0aeffd08b8f975dfb013d87e8169",
+      "inputTree": "2a047e59f822b2850f70c7e7626922e8f126da0d",
+      "state": "COMPLETED",
+      "result": "VERIFIED_DELIVERY",
+      "finalCommit": "78b7d2e92ebb9d0f7790ca3c7faccdc629096eee",
+      "finalTree": "20b2848210a1d62c955214434548ed73360ec913",
+      "usageByPhase": [
+        {
+          "phase": "CANDIDATE:public-acceptance",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 1462
+        },
+        {
+          "phase": "IMPLEMENT",
+          "records": 1,
+          "estimatedCostUsd": 0.009043872,
+          "inputTokens": 9072,
+          "outputTokens": 5026,
+          "cacheReadTokens": 48512,
+          "durationMs": 23893
+        },
+        {
+          "phase": "INDEPENDENT_PROBE",
+          "records": 18,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 25368
+        },
+        {
+          "phase": "INTEGRATION:public-acceptance",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 1223
+        },
+        {
+          "phase": "PROBE_CONTROL",
+          "records": 3,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 5910
+        },
+        {
+          "phase": "PROBE_CRITIQUE",
+          "records": 1,
+          "estimatedCostUsd": 0.005543388,
+          "inputTokens": 4557,
+          "outputTokens": 3438,
+          "cacheReadTokens": 8448,
+          "durationMs": 17757
+        },
+        {
+          "phase": "RUN:public-acceptance",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 1154
+        },
+        {
+          "phase": "SINGLE",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 105432
+        },
+        {
+          "phase": "SPECIFICATION_DESIGN",
+          "records": 1,
+          "estimatedCostUsd": 0.00999078,
+          "inputTokens": 3701,
+          "outputTokens": 7378,
+          "cacheReadTokens": 4480,
+          "durationMs": 36192
+        }
+      ],
+      "estimatedCostUsd": 0.02457804,
+      "checks": [
+        {
+          "subject": "CANDIDATE",
+          "state": "PASSED",
+          "count": 7
+        },
+        {
+          "subject": "INTEGRATION",
+          "state": "PASSED",
+          "count": 7
+        },
+        {
+          "subject": "RUN",
+          "state": "PASSED",
+          "count": 10
+        }
+      ],
+      "modelContexts": 3
+    },
+    {
+      "runId": "f4aa1bf9-943b-4375-ac9b-6ccf0f56ce71",
+      "inputCommit": "51e6bd93d51f0aeffd08b8f975dfb013d87e8169",
+      "inputTree": "2a047e59f822b2850f70c7e7626922e8f126da0d",
+      "state": "COMPLETED",
+      "result": "VERIFIED_DELIVERY",
+      "finalCommit": "81a15db3bfb91b6c1af06df131428a4da20a447a",
+      "finalTree": "a88a6cffcd3aec24eef4d01dc358341c57408f09",
+      "usageByPhase": [
+        {
+          "phase": "CANDIDATE:public-acceptance",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 1371
+        },
+        {
+          "phase": "IMPLEMENT",
+          "records": 1,
+          "estimatedCostUsd": 0.008354484,
+          "inputTokens": 8731,
+          "outputTokens": 4483,
+          "cacheReadTokens": 59264,
+          "durationMs": 26752
+        },
+        {
+          "phase": "INDEPENDENT_PROBE",
+          "records": 18,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 24718
+        },
+        {
+          "phase": "INTEGRATION:public-acceptance",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 1470
+        },
+        {
+          "phase": "PROBE_CONTROL",
+          "records": 3,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 4474
+        },
+        {
+          "phase": "PROBE_CRITIQUE",
+          "records": 1,
+          "estimatedCostUsd": 0.007269384,
+          "inputTokens": 5566,
+          "outputTokens": 4610,
+          "cacheReadTokens": 11264,
+          "durationMs": 27030
+        },
+        {
+          "phase": "REVIEW",
+          "records": 1,
+          "estimatedCostUsd": 0.006006059999999999,
+          "inputTokens": 6153,
+          "outputTokens": 3438,
+          "cacheReadTokens": 5760,
+          "durationMs": 19135
+        },
+        {
+          "phase": "RUN:public-acceptance",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 1644
+        },
+        {
+          "phase": "SINGLE",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "durationMs": 159387
+        },
+        {
+          "phase": "SPECIFICATION_DESIGN",
+          "records": 1,
+          "estimatedCostUsd": 0.019288284,
+          "inputTokens": 3341,
+          "outputTokens": 15214,
+          "cacheReadTokens": 4864,
+          "durationMs": 61341
+        }
+      ],
+      "estimatedCostUsd": 0.040918211999999995,
+      "checks": [
+        {
+          "subject": "CANDIDATE",
+          "state": "PASSED",
+          "count": 7
+        },
+        {
+          "subject": "INTEGRATION",
+          "state": "PASSED",
+          "count": 7
+        },
+        {
+          "subject": "RUN",
+          "state": "PASSED",
+          "count": 10
+        }
+      ],
+      "modelContexts": 4
+    }
+  ]
+}

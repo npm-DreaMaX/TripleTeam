@@ -30,21 +30,22 @@ Built for changes that span **multiple modules, dependent stages and repeated ve
 
 ## Your terminal, with the whole task in view
 
-<p align="center"><img src="docs/assets/terminal.svg" alt="TripleTeam's own terminal dashboard showing labeled sample tasks, coordination and evidence" width="100%" /></p>
+<p align="center"><img src="docs/assets/terminal.svg" alt="TripleTeam's goal input and progress interface using labeled sample data" width="100%" /></p>
 
-*Rendered from the actual TripleTeam dashboard using sample data. Try it with `tripleteam demo`; no API key or repository is needed.*
+*Rendered from the actual TripleTeam interface using sample data. Try it with `tripleteam demo`; no API key or repository is needed.*
 
-- **Overview** — goal, accepted tasks, active work, recorded usage, coordination decisions and evidence.
-- **Tasks** — task scope, state, risk and attempt details.
-- **Activity** — the durable execution timeline.
-- **Keyboard navigation** — `1 / 2 / 3` switch views, `j / k` scroll, `q` closes the view.
+- **Start naturally** — open `tripleteam` and type an engineering goal. `/continue` picks up saved work.
+- **See what matters** — current goal, active tasks and decisions that need your input. `/tasks` expands details.
+- **Configure in place** — `/models`, `/model` and `/settings` expose role models, budgets, parallelism and checks.
+- **Discover commands** — grouped `/help`, `Tab` completion, input history and `PgUp / PgDn` for details.
+- **Inspect delivery** — `/delivery` shows the Git artifact and evidence; `/events` opens the detailed timeline.
 - **Automation** — `--json`, automatic JSON when piped, `--plain` and `NO_COLOR`.
 
 TripleTeam has its own layout, navigation and product workflow. Pi runs agents in the background through public RPC; users do not enter Pi's chat interface.
 
 ## Quick start
 
-**Requirements:** Node.js **22.19+**, Git, and access to a model provider. Linux, macOS or WSL2 are the recommended command-line environments. Docker is used for isolated behavioral verification.
+**Requirements:** Node.js **22.19+**, Git, `rg` (ripgrep), `fd`/`fdfind`, and access to a model provider. The search binaries can also be available in Pi's tool cache. Linux, macOS or WSL2 are the recommended command-line environments. Docker is used for isolated behavioral verification.
 
 ```bash
 git clone https://github.com/npm-DreaMaX/TripleTeam.git
@@ -59,9 +60,11 @@ tripleteam demo
 
 Without a global installation, use `node /path/to/TripleTeam/dist/cli.js` in place of `tripleteam`.
 
+`doctor` exercises the actual Pi search tools without inference or downloads. Worker startup repeats the checks for its selected tools so a missing executable is detected before spending model tokens.
+
 ### Connect your models
 
-Each role can use its own **provider, model and reasoning level**. Planning can use a different API from implementation, exploration and review. Omitted role settings inherit the global selection.
+Each role can use its own **provider, model and reasoning level**. Planning, exploration, implementation, review and independent verification can use different APIs. Omitted role settings inherit the global selection.
 
 **Built-in providers:** export your provider's API key and inspect locally registered model IDs:
 
@@ -84,7 +87,7 @@ Put `.tripleteam.json` in the **target repository**. Replace the model placehold
     "reasoning": "medium",
     "policy": "ADAPTIVE",
     "maxParallelism": 4,
-    "tokenLimit": 200000,
+    "tokenLimit": 1000000,
     "roles": {
       "planner": {
         "provider": "anthropic",
@@ -98,6 +101,10 @@ Put `.tripleteam.json` in the **target repository**. Replace the model placehold
       "reviewer": {
         "provider": "anthropic",
         "model": "YOUR_REVIEW_MODEL_ID",
+        "reasoning": "high"
+      },
+      "verifier": {
+        "model": "YOUR_VERIFICATION_MODEL_ID",
         "reasoning": "high"
       }
     }
@@ -132,14 +139,26 @@ Then select `"provider": "my-coding-api"` and the matching model ID globally or 
 
 Full setup, protocol selection, pricing and copyable multi-provider templates: **[Model & API configuration](docs/CONFIGURATION.md)**.
 
+For DeepSeek, a ready-to-edit [provider registry](examples/models.deepseek.json) includes `deepseek-flash`, reasoning compatibility and a price table. Set `TRIPLETEAM_DEEPSEEK_API_KEY` in your environment, merge the example into your Pi registry, then select `"provider": "deepseek", "model": "deepseek-flash"`.
+
 ### Run an engineering task
 
 From your target Git repository:
 
 ```bash
-tripleteam profiles
-tripleteam run "Add a resumable export workflow with API, SDK support and tests"
+tripleteam
 ```
+
+Inside the workspace, after configuring your provider:
+
+```text
+/model all deepseek/deepseek-flash high
+/settings execution.maxParallelism 2
+/settings execution.costLimitUsd 5
+Add a resumable export workflow with API, SDK support and tests
+```
+
+Settings apply to new runs. Existing runs retain their frozen models, budgets and acceptance checks. For a one-shot invocation or script, use `tripleteam run "your engineering goal"`.
 
 In another terminal, follow the same work:
 
@@ -160,9 +179,12 @@ Successful delivery includes `refs/heads/tripleteam-deliveries/<run-id>` and an 
 
 ## How the work converges
 
+Inspect `/why` for the actual coordination decision, live writers, verification allocation and remaining final checks. Check scopes define independently verifiable increments; atomic obligations keep coupled changes together. Frozen preparation runs on clean worktrees, and baseline failures inform planning before model execution. Repository observations can be reused only while their question, profile, context and Git read dependencies remain valid.
+
 ```mermaid
 flowchart LR
-    G[Goal + acceptance + budget] --> P[Plan and inspect]
+    G[Goal + acceptance + budget] --> B[Prepare and check baseline]
+    B --> P[Plan verifiable increments]
     P --> C{Allocate compute}
     C --> S[Single execution]
     C --> M[Compatible parallel tasks]
@@ -178,19 +200,34 @@ flowchart LR
     F -- Bounded repair --> C
 ```
 
-### Designed for long-running work
+## A real repository demonstration
+
+```bash
+tripleteam demo create /tmp/atlas-demo
+cd /tmp/atlas-demo
+tripleteam
+```
+
+Ask it to implement the asynchronous report export workflow in `SPEC.md`, preserving existing behavior and passing final acceptance. The starter includes contracts, a job module, an HTTP API, an SDK and public acceptance tests. Supply an immutable Python Docker image as the second argument to `demo create` for protected behavioral checks. The scheduler chooses single or parallel work from the actual task and budget.
+
+[Acceptance and demonstration](docs/ACCEPTANCE.md) · [Benchmark guide](docs/BENCHMARK_GUIDE.zh-CN.md)
+
+Use **FeatureBench** for feature delivery and cost, and **SWE-Milestone** for continuous evolution. Frozen experiment manifests, complete usage accounting and paired analysis make delivery quality, cost and latency measurable.
+
+## Designed for long-running work
 
 - **Persistent task state.** Tasks outlive individual attempts, processes and model sessions.
 - **Isolated writers.** Each writer attempt works in its own Git worktree; epoch checks fence stale execution.
 - **Executable coordination.** `provides`, `requires` and assumptions carry artifact and check obligations.
+- **Independent verification before implementation.** Derive source-cited behavior obligations, execute counterexamples, then critique surviving probes in a fresh context. Verify each increment at its own stage and repeat every frozen obligation on the final tree.
 - **Failure-aware continuation.** Preserve useful candidates; use retry, diagnosis, replanning or revalidation according to failure evidence.
 - **Explicit budgets.** Planning, workers, review, retries and recovery share recorded token, cost and execution limits.
 - **Human on exception.** Product choices and authority changes become durable decision requests. Technical investigation stays in the execution workflow.
 - **Recoverable delivery.** SQLite authority, an operation journal and Git compare-and-swap connect process recovery to the final artifact.
 
-### Configure acceptance
+## Configure acceptance
 
-TripleTeam detects `npm run check` and `npm test` when present. Projects can provide explicit candidate, integration and final checks in `.tripleteam.json`.
+TripleTeam discovers declared npm, pytest, Cargo and Go checks. Projects can provide explicit candidate, integration and final checks in `.tripleteam.json`. Independent probes supplement those checks; their coverage and computation limits are configurable through `assurance`.
 
 Final reports distinguish **`VERIFIED_DELIVERY`**, **`STRUCTURAL_HANDOFF`**, **`BLOCKED`** and **`CANCELLED`**. Behavioral delivery uses protected acceptance checks in a pinned, read-only container; structural and build evidence remain clearly labeled. See [verification configuration](docs/VERIFICATION.md).
 
@@ -198,13 +235,17 @@ Final reports distinguish **`VERIFIED_DELIVERY`**, **`STRUCTURAL_HANDOFF`**, **`
 
 | Command | Purpose |
 | --- | --- |
-| `tripleteam` / `tripleteam dashboard` | Open the live terminal workspace |
+| `tripleteam` / `tripleteam shell [repo]` | Open the goal input and command workspace |
 | `tripleteam demo` | Explore the UI with sample data |
+| `tripleteam demo create <new-directory> [image]` | Create a real cross-module engineering task |
 | `tripleteam run "goal" [repo]` | Plan and execute an objective |
 | `tripleteam continue [repo] [run-id]` | Reconcile and continue existing work |
 | `tripleteam status --watch` | Follow the live dashboard |
+| `tripleteam why [repo] [run-id]` | Inspect compute decisions and remaining delivery gates |
 | `tripleteam profiles [repo]` | Inspect effective model selections for every role |
 | `tripleteam models [filter]` | Inspect the local provider/model registry |
+| `tripleteam model role provider/model [reasoning]` | Select a model for a role or `all` roles |
+| `tripleteam settings [key [value]]` | Browse and update validated next-run settings |
 | `tripleteam decisions [repo]` | Inspect pending human decisions |
 | `tripleteam result [repo]` | Show delivery ref and evidence manifest |
 | `tripleteam doctor` | Check the local installation |
@@ -219,6 +260,7 @@ Run `tripleteam help` for messages, proposals, retry, cancellation and daemon co
 | [Terminal guide](docs/CLI.md) | Navigation, run lifecycle, daemon use and automation |
 | [Architecture](docs/ARCHITECTURE.md) | Task / Attempt / Execution, contracts, integration and recovery |
 | [Verification](docs/VERIFICATION.md) | Check configuration and evidence levels |
+| [Independent probes](docs/INDEPENDENT_VERIFICATION.md) | Specification sources, executable counterexamples, critique and frozen check batches |
 | [Evaluation adapters](docs/BENCHMARK_ADAPTERS.md) | FeatureBench and SWE-Milestone workflows |
 | [Comparison protocol](docs/BASELINE_COMPARISON.md) | Product baselines and controlled policy ablations |
 | [Upstream inventory](UPSTREAM.md) | Fixed Pi snapshot, public APIs and third-party attribution |

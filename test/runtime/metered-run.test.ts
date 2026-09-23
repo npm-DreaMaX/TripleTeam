@@ -7,6 +7,7 @@ import { ControlKernel } from "../../src/control/kernel.ts";
 import { DomainInvariantError } from "../../src/domain/model.ts";
 import type { PiWorkerController } from "../../src/runtime/pi/launcher.ts";
 import { runMetered } from "../../src/runtime/pi/metered-run.ts";
+import { PiProviderUnavailableError } from "../../src/runtime/pi/provider-error.ts";
 import { type PiUsage, usageFromPiEvent } from "../../src/runtime/pi/rpc-worker.ts";
 import { openControlDatabase } from "../../src/store/database.ts";
 
@@ -131,6 +132,37 @@ test("concurrent executions share one reservation budget and actual usage is not
 	kernel.releaseCompute("r1");
 	kernel.reserveCompute({ id: "r3", runId: "run", executionId: third.executionId });
 	assert.ok(kernel.computeSnapshot("run").costUsd + kernel.computeSnapshot("run").reservedUsd <= 1 + 1e-9);
+});
+
+test("permanent provider failure stops subsequent compute until explicit continuation without resetting usage", async (context) => {
+	const { kernel, catalog, execution } = await fixture(context);
+	const failing = worker(async (emit) => {
+		emit({ ...zero(), inputTokens: 12, costUsd: 0.1 });
+		throw new PiProviderUnavailableError("BILLING");
+	});
+	const first = execution("billing");
+	await assert.rejects(runMetered(failing.controller, first), PiProviderUnavailableError);
+	assert.match(kernel.computeSnapshot("run").unavailableReason ?? "", /402/);
+	assert.equal(catalog.listControlActions("run", "PROVIDER_UNAVAILABLE").length, 1);
+	let calls = 0;
+	const next = worker(async () => {
+		calls++;
+		return zero();
+	});
+	const second = execution("no-extra-inference");
+	await assert.rejects(runMetered(next.controller, second), /402/);
+	assert.equal(calls, 0);
+	for (const input of [first, second]) {
+		kernel.finishExecution({ executionId: input.executionId, state: "EXITED", exitCode: 1, actor });
+		kernel.failAttempt({ attemptId: input.attemptId, reason: "Provider unavailable", retryTask: false, actor });
+	}
+	kernel.blockRun("run", "Provider unavailable", actor);
+	kernel.resumeRun("run", actor);
+	const after = kernel.computeSnapshot("run");
+	assert.equal(after.unavailableReason, null);
+	assert.equal(after.tokens, 12);
+	assert.equal(after.costUsd, 0.1);
+	assert.equal(catalog.listControlActions("run", "PROVIDER_RECOVERY_REQUESTED").length, 1);
 });
 
 test("a streaming failure retains observed cost and an interrupted reservation", async (context) => {

@@ -1,4 +1,4 @@
-export const AGENT_ROLES = ["planner", "explorer", "implementer", "reviewer"] as const;
+export const AGENT_ROLES = ["planner", "explorer", "implementer", "reviewer", "verifier"] as const;
 export type AgentRole = (typeof AGENT_ROLES)[number];
 export interface ModelSelection {
 	model?: string;
@@ -18,8 +18,13 @@ export interface ExecutionPolicy extends ModelSelection {
 	reservationTokens: number;
 	maxFinalRepairs: number;
 	maxExplorationAttempts: number;
+	maxPlanningTokens: number;
+	maxPlanningToolCalls: number;
+	maxPlanningMs: number;
 	enableContracts: boolean;
 	enableFailureAdaptation: boolean;
+	enableComputeAllocation?: boolean;
+	enableEvidenceReuse?: boolean;
 	roles?: Partial<Record<AgentRole, ModelSelection>>;
 }
 
@@ -83,8 +88,13 @@ export function parseExecutionPolicy(value: unknown = {}): ExecutionPolicy {
 		reservationTokens: number("reservationTokens", 32_000) as number,
 		maxFinalRepairs: number("maxFinalRepairs", 2, true, 0) as number,
 		maxExplorationAttempts: number("maxExplorationAttempts", 2) as number,
+		maxPlanningTokens: number("maxPlanningTokens", 250_000) as number,
+		maxPlanningToolCalls: number("maxPlanningToolCalls", 24) as number,
+		maxPlanningMs: number("maxPlanningMs", 120_000) as number,
 		enableContracts: flag("enableContracts"),
 		enableFailureAdaptation: flag("enableFailureAdaptation"),
+		enableComputeAllocation: flag("enableComputeAllocation"),
+		enableEvidenceReuse: flag("enableEvidenceReuse"),
 		model: text("model"),
 		provider: text("provider"),
 		reasoning:
@@ -107,6 +117,23 @@ export function modelSelectionFor(execution: ExecutionPolicy | undefined, role?:
 export function executionPolicyFor(goalContract: unknown): ExecutionPolicy {
 	const goal = goalContract as { executionPolicy?: unknown } | null;
 	return parseExecutionPolicy(goal?.executionPolicy ?? {});
+}
+
+/** Initial planning and its investigations consume one allocation, preserving most run compute for delivery. */
+export function remainingPlanningBudget(
+	policy: ExecutionPolicy,
+	spent: { tokens: number; toolCalls: number; durationMs: number },
+) {
+	return {
+		tokenLimit:
+			Math.min(
+				policy.maxPlanningTokens,
+				policy.tokenLimit === undefined ? Infinity : Math.floor(policy.tokenLimit * 0.2),
+			) - spent.tokens,
+		toolCallLimit: policy.maxPlanningToolCalls - spent.toolCalls,
+		durationMs: policy.maxPlanningMs - spent.durationMs,
+		label: "Planning",
+	};
 }
 
 /** A whole-goal baseline may use the shared compute cap, with identical no-progress stops. */

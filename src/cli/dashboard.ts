@@ -1,6 +1,8 @@
 import { matchesKey, ProcessTerminal, TuiAltScreen } from "@earendil-works/pi-tui";
 import type { DashboardSnapshot } from "./dashboard-data.ts";
-import { clean, fit, formatTokens, pad, paint, sanitizeText, section, stateTone, wrap } from "./theme.ts";
+import type { ShellDocument } from "./shell-commands.ts";
+import { overviewDocument, tasksDocument } from "./shell-view.ts";
+import { clean, fit, formatTokens, paint, wrap } from "./theme.ts";
 
 export interface DashboardView {
 	width: number;
@@ -13,198 +15,71 @@ export interface DashboardView {
 	watch?: boolean;
 }
 
-function taskLines(
-	snapshot: DashboardSnapshot,
-	width: number,
-	limit: number,
-	offset = 0,
-	detail = false,
-	color = false,
-): string[] {
-	const tasks = snapshot.tasks.slice(offset, offset + limit);
-	if (!tasks.length) return [paint("Waiting for the task graph…", "muted", color)];
-	return tasks.flatMap((task) => {
-		const state = task.state === "PROPOSED" ? "WAITING" : clean(task.state);
-		const symbol = state === "ACCEPTED" ? "+" : state === "ACTIVE" ? ">" : state === "BLOCKED" ? "!" : "·";
-		const line =
-			paint(pad(`${symbol} ${state}`, 13), stateTone(state), color) + fit(clean(task.title), Math.max(1, width - 13));
-		return detail
-			? [
-					line,
-					paint(
-						fit(
-							`  ${clean(task.scope)}   ·   attempt ${task.epoch}   ·   ${clean(task.risk).toLowerCase()} risk`,
-							width,
-						),
-						"muted",
-						color,
-					),
-					paint(fit(`  ${clean(task.id)}`, width), "muted", color),
-					"",
-				]
-			: [line];
-	});
-}
-
-function eventLines(snapshot: DashboardSnapshot, width: number, limit: number, offset = 0, color = false): string[] {
-	const events = snapshot.events.slice(offset, offset + limit);
-	return events.length
-		? events.flatMap((event) => [
-				paint(clean(event.time.slice(11, 19)) + "  ", "muted", color) +
-					paint(fit(clean(event.type), Math.max(1, width - 10)), "text", color),
-				...wrap(event.detail, Math.max(1, width - 2))
-					.slice(0, 2)
-					.map((line) => paint("  " + line, "muted", color)),
-			])
-		: [paint("Activity will appear as the run progresses.", "muted", color)];
-}
-
+/** The same quiet, single-column presentation as the interactive shell. */
 export function renderDashboard(snapshot: DashboardSnapshot, view: DashboardView): string[] {
-	const width = Math.max(12, Math.min(view.width - 4, 124));
-	const height = Math.max(5, view.height);
-	const color = view.color;
-	const tab = view.tab ?? 0;
-	const offset = view.offset ?? 0;
-	const p = (text: string, tone: Parameters<typeof paint>[1] = "text", bold = false) =>
-		paint(sanitizeText(text), tone, color, bold);
-	const result: string[] = [];
-	const right = snapshot.sample ? "PREVIEW / SAMPLE DATA" : snapshot.run ? clean(snapshot.run.state) : "READY";
-	const brand = p("▰▰▰  TripleTeam", "accent", true);
-	result.push(
-		brand + " ".repeat(Math.max(2, width - 18 - right.length)) + p(right, snapshot.sample ? "warning" : "muted"),
-	);
-	result.push(p(fit(clean(snapshot.repository), width), "muted"));
-	result.push("");
-	result.push(
-		p(
-			fit(
-				clean(view.loading ?? snapshot.run?.objective ?? "Turn an engineering goal into a checked Git delivery."),
-				width,
-			),
-			"text",
-			true,
-		),
-	);
-	result.push("");
-	result.push(
-		["1 Overview", "2 Tasks", "3 Activity"]
-			.map((title, index) =>
-				p(`${index === tab ? "▸" : " "} ${title}`, index === tab ? "accent" : "muted", index === tab),
-			)
-			.join("     "),
-	);
-	result.push(p("─".repeat(width), "border"));
+	const width = Math.max(0, Math.floor(view.width));
+	const height = Math.max(0, Math.floor(view.height));
+	if (!width || !height) return [];
+	const margin = width >= 32 ? "  " : "";
+	const contentWidth = Math.max(1, Math.min(104, width - margin.length * 2));
+	const p = (text: string, tone: "text" | "muted" | "accent" | "error" = "text", bold = false) =>
+		paint(clean(text), tone, view.color, bold);
+	const rows = [
+		p("TripleTeam", "accent", true) +
+			"  " +
+			p(snapshot.sample ? "PREVIEW / SAMPLE DATA" : snapshot.repository, "muted"),
+		"",
+	];
+	const document: ShellDocument =
+		view.tab === 1
+			? tasksDocument(snapshot)
+			: view.tab === 2
+				? {
+						title: "Recent activity",
+						lines: snapshot.events.length
+							? snapshot.events.flatMap((event) => [
+									{ text: event.time.slice(11, 19) + "  " + event.type },
+									{ text: event.detail, tone: "muted" as const },
+									{ text: "" },
+								])
+							: [{ text: "No activity yet.", tone: "muted" }],
+					}
+				: overviewDocument(snapshot, Boolean(view.loading));
+	if (view.loading && !snapshot.run) document.title = view.loading;
+	const content: string[] = [...wrap(document.title, contentWidth).map((line) => p(line, "text", true)), ""];
+	for (const line of document.lines)
+		content.push(...(line.text ? wrap(line.text, contentWidth).map((text) => p(text, line.tone)) : [""]));
 	if (view.error)
-		result.push(
-			...wrap(`Refresh paused: ${view.error}`, width)
+		content.unshift(
+			...wrap(view.error, contentWidth)
 				.slice(0, 2)
-				.map((line) => p(line, "warning")),
-		);
-	if (!snapshot.run) {
-		result.push("", p("A workspace for the whole task.", "text", true), "");
-		result.push(
-			...wrap(
-				"Give TripleTeam a goal. Follow the plan, inspect the evidence, and pick up the final Git delivery here.",
-				width,
-			).map((line) => p(line, "muted")),
+				.map((line) => p(line, "error")),
 			"",
 		);
-		result.push(p('  tripleteam run "your engineering goal"', "accent"), "");
-		result.push(p("  tripleteam doctor       Check your installation", "muted"));
-		result.push(p("  tripleteam profiles     Inspect role configuration", "muted"));
-		result.push(p("  tripleteam demo         Explore the terminal UI", "muted"));
-	} else {
-		const accepted = snapshot.tasks.filter((task) => task.state === "ACCEPTED").length;
-		const eligible = snapshot.tasks.filter((task) => task.state !== "CANCELLED").length;
-		const active = snapshot.tasks.filter((task) => task.state === "ACTIVE").length;
-		const cost = snapshot.sample
-			? "— preview"
-			: `$${snapshot.usage.cost.toFixed(3)} recorded${snapshot.usage.unsettled ? " *" : ""}`;
-		const metrics = [`${accepted}/${eligible} accepted`, `${active} active tasks`, cost];
-		result.push(
-			...(width >= 70
-				? [metrics.map((metric) => p(metric, "text", true)).join(p("    /    ", "border"))]
-				: metrics.map((metric) => p(metric, "text", true))),
-		);
-		result.push(
-			p(
-				`${snapshot.policy}  ·  ${snapshot.maxParallelism} writer slots  ·  ${snapshot.sample ? "no API calls" : formatTokens(snapshot.usage.tokens) + " recorded tokens"}`,
-				"muted",
-			),
-		);
-		result.push("");
-		if (tab === 1) {
-			result.push(
-				...taskLines(snapshot, width, Math.max(1, Math.floor((height - result.length - 4) / 4)), offset, true, color),
-			);
-		} else if (tab === 2) {
-			result.push(
-				...eventLines(snapshot, width, Math.max(1, Math.floor((height - result.length - 4) / 3)), offset, color),
-			);
-		} else {
-			const rows = Math.max(2, Math.min(7, height - result.length - 9));
-			const passed = snapshot.checks.PASSED ?? 0;
-			const failed = (snapshot.checks.FAILED ?? 0) + (snapshot.checks.ERROR ?? 0);
-			const evidence = `${passed} passed  ·  ${failed} failed  ·  ${snapshot.checks.RUNNING ?? 0} running`;
-			if (width >= 92) {
-				const leftWidth = Math.floor(width * 0.58);
-				const rightWidth = width - leftWidth - 2;
-				const left = section("TASKS", taskLines(snapshot, leftWidth - 4, rows, 0, false, color), leftWidth, color);
-				const info = [
-					p(clean(snapshot.coordination?.mode ?? "PLANNING"), "accent", true),
-					...wrap(
-						snapshot.coordination?.rationale ?? "Inspecting the repository and preparing the next action.",
-						rightWidth - 4,
-					).slice(0, Math.max(1, rows - 4)),
-					"",
-					p(`${snapshot.contracts.satisfied}/${snapshot.contracts.total} contracts satisfied`, "muted"),
-					p(evidence, failed ? "warning" : "muted"),
-				];
-				const rightPanel = section("COORDINATION", info.slice(0, rows), rightWidth, color);
-				for (let index = 0; index < Math.max(left.length, rightPanel.length); index++)
-					result.push(pad(left[index] ?? "", leftWidth) + "  " + (rightPanel[index] ?? ""));
-			} else {
-				result.push(
-					...taskLines(snapshot, width, rows, 0, false, color),
-					"",
-					p(clean(snapshot.coordination?.mode ?? "PLANNING"), "accent"),
-				);
-				result.push(p(evidence, failed ? "warning" : "muted"));
-			}
-			if (snapshot.delivery) {
-				result.push("", p(clean(snapshot.delivery.result), stateTone(snapshot.delivery.result), true));
-				result.push(p(fit(clean(snapshot.delivery.ref ?? snapshot.run.reason), width), "muted"));
-			} else if (snapshot.decisions[0]) {
-				result.push(
-					"",
-					p("YOUR DECISION", "warning", true),
-					...wrap(snapshot.decisions[0].question, width).slice(0, 2),
-				);
-				result.push(p("tripleteam decisions  ·  inspect options and respond", "muted"));
-			} else if (snapshot.run.reason) {
-				result.push(
-					"",
-					...wrap(snapshot.run.reason, width)
-						.slice(0, 2)
-						.map((line) => p(line, "warning")),
-				);
-			} else if (height > 28) {
-				result.push("", p("LATEST ACTIVITY", "muted"), ...eventLines(snapshot, width, 1, 0, color));
-			}
-		}
-	}
-	const footer = snapshot.sample
-		? "Sample workspace · no model calls or files changed"
-		: snapshot.run
-			? `run ${snapshot.run.id.slice(0, 12)}  ·  head ${snapshot.run.integrationHead.slice(0, 10)}`
-			: "Local workspace · your provider · ordinary Git";
-	const controls = view.watch
-		? "1/2/3 views   j/k scroll   q close view"
-		: "tripleteam dashboard · live view    --json · machine output";
-	const body = result.slice(0, Math.max(1, height - 3));
-	while (body.length < height - 3) body.push("");
-	body.push(p("─".repeat(width), "border"), p(fit(footer, width), "muted"), p(fit(controls, width), "muted"));
-	return body.slice(0, Math.max(0, view.height)).map((line) => fit("  " + fit(line, width), Math.max(0, view.width)));
+	const available = Math.max(0, height - rows.length - 3);
+	const offset = Math.min(Math.max(0, view.offset ?? 0), Math.max(0, content.length - available));
+	rows.push(...content.slice(offset, offset + available));
+	while (rows.length < height - 3) rows.push("");
+	rows.push(p("─".repeat(contentWidth), "muted"));
+	rows.push(
+		p(
+			snapshot.sample
+				? "Sample workspace · no model calls or files changed"
+				: snapshot.usage.tokens
+					? `${formatTokens(snapshot.usage.tokens)} tokens · $${snapshot.usage.cost.toFixed(2)} recorded`
+					: "Local workspace",
+			"muted",
+		),
+	);
+	rows.push(
+		p(
+			view.watch
+				? "1 overview · 2 tasks · 3 activity · j/k scroll · q close"
+				: "tripleteam · interactive shell    --json · machine output",
+			"muted",
+		),
+	);
+	return rows.slice(-height).map((line) => fit(margin + fit(line, contentWidth), width));
 }
 
 /** Product-owned layout and navigation over Pi's public terminal primitives. */

@@ -6,9 +6,10 @@ TripleTeam 的完成声明表示：冻结的检查在指定 Git tree 上通过�
 
 - Check 的名字和命令中的 `test`、`integration` 等字样不再决定证据强度。
 - 未声明 `evidenceClass` 的检查是 `STRUCTURAL`；默认 `git diff --check` 也是 `STRUCTURAL`。
-- 自动发现的 `npm run check`、`npm test` 是 `BUILD`。本地测试仍会执行，失败仍会阻止验收，但仅凭可写进程中的测试不能宣布 `VERIFIED_DELIVERY`。
+- 自动发现的 `npm run check`、`npm test`、已声明的 pytest、`cargo test --locked`、`go test ./...` 是 `BUILD`。本地测试仍会执行，失败仍会阻止验收，但仅凭可写进程中的测试不能宣布 `VERIFIED_DELIVERY`。
 - `BEHAVIORAL` / `EXTERNAL` 必须同时声明受保护的 oracle 和使用不可变镜像的 Docker 只读执行；缺少任一项则降为 `BUILD`。
 - 全部普通门控通过、证据仅为结构或构建级时，终态是 `STRUCTURAL_HANDOFF`。系统不会为了得到更好的完成数字自动提高证据等级。
+- 新运行默认启用 `assurance.mode: "adaptive"`。公开规格引用、独立设计和批判、共用断言的错误对照、重复执行与准确版本门禁详见[独立验证](INDEPENDENT_VERIFICATION.md)。模型生成检查固定为补充 `BUILD` 证据，不能代替外部验收。
 
 ## 配置受保护的验收检查
 
@@ -39,7 +40,34 @@ TripleTeam 的完成声明表示：冻结的检查在指定 Git tree 上通过�
 
 示例中的 image 必须替换为已安装镜像的完整 ID，或 `repository@sha256:...`。可用 `docker image inspect --format '{{.Id}}' your-verifier-image` 获取完整 ID。运行检查时固定 `--pull=never`，不会偷偷下载或更新镜像。镜像必须预先包含解释器、测试依赖和检查需要的工具；缺少环境时返回基础设施错误，不回退到可写的本地测试。
 
-`integrationChecks`、`candidateChecks` 支持同样字段。通常 candidate 阶段可用轻量结构检查，集成与最终 run 阶段执行完整验收。
+`integrationChecks`、`candidateChecks` 支持同样字段。candidate 阶段检查该增量，integration 阶段保护已集成功能，`runChecks` 冻结完整目标的最终验收。需要全部新功能才能通过的检查，应在运行前放入 `runChecks`。
+
+## 阶段范围、不可拆分条件与环境
+
+检查可增加 `scope: ["packages/api", "packages/sdk"]`。没有 scope 的检查适用于每个 Task；有 scope 的检查选择与 Task 写入范围相交的增量。`atomic: true` 要求显式 scope，并让覆盖该条件的多个规划节点合并，包括消除合并造成的依赖环。一个检查仍可以是全局必要条件，不应为了获得并行而缩小它的范围。
+
+`baseline.enabled` 默认 true。新 run 在调用 planner 前，于独立干净工作树执行冻结的 integration checks；结果是基线观察，不能满足 candidate、integration 或 final gate。基线普通失败使相关增量合并；全局检查起始失败时退回完整目标。环境/完整性错误阻止模型计算；修复环境后显式 continue 可复查，历史失败仍保留。
+
+原生检查支持固定准备步骤，示例：
+
+```json
+{
+  "name": "api-tests",
+  "scope": ["packages/api"],
+  "argv": ["npm", "test", "--workspace", "api"],
+  "timeoutMs": 600000,
+  "lane": "HEAVY_CHECK",
+  "evidenceClass": "BUILD",
+  "preparation": {
+    "commands": [["npm", "ci", "--ignore-scripts", "--prefer-offline", "--no-audit", "--no-fund"]],
+    "timeoutMs": 300000
+  }
+}
+```
+
+准备命令是 argv 数组，必须在运行前配置；计入检查总 timeout，并另受 preparation timeout 限制。失败时不执行检查正文。源代码完整性监测覆盖准备全过程，`node_modules` 等生成目录应在 Git 忽略规则中；不得把修改锁文件当成环境准备。检测到 npm lockfile 的自动 npm 检查使用相同的 `npm ci --ignore-scripts` 准备。其他生态按仓库约定显式配置。
+
+Docker 检查的依赖应预先装入固定镜像；不支持以 preparation 变更只读 source mount。scope、atomic、preparation、oracle 和镜像共同进入检查版本哈希。Kernel 对新 run 的任务创建及改图入口检查冻结条件，拒绝删除、替换或降级必需 review。
 
 ### Oracle 如何冻结
 

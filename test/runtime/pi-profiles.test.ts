@@ -107,7 +107,7 @@ test("persisted run profiles reject changed external definitions before every fr
 	orchestrator = await LocalOrchestrator.open(repository);
 	const initialized = await orchestrator.initialize("Implement source changes");
 	const originalGoal = orchestrator.catalog.getRun(initialized.runId).goalContract as { piProfiles: FrozenPiProfiles };
-	assert.deepEqual(Object.keys(originalGoal.piProfiles), ["PLAN", "EXPLORE", "IMPLEMENT", "REVIEW"]);
+	assert.deepEqual(Object.keys(originalGoal.piProfiles), ["PLAN", "EXPLORE", "IMPLEMENT", "REVIEW", "VERIFY"]);
 	assert.ok(Object.values(originalGoal.piProfiles).every((profile) => /^[a-f0-9]{64}$/.test(profile.version)));
 	orchestrator.close();
 	orchestrator = undefined;

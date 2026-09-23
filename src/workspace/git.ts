@@ -276,6 +276,30 @@ export class GitWorkspaceManager {
 		return { blobHash: match[2], mode: match[1] as string };
 	}
 
+	/** A Git-backed read dependency, including absence and directory listings. */
+	async observationIdentity(commit: string, path: string): Promise<string> {
+		if (!/^[a-f0-9]{40,64}$/.test(commit)) throw new Error("Observation requires an immutable commit");
+		if (path === ".") return "tree:" + (await this.treeHash(commit));
+		if (
+			!path ||
+			/[\0\r\n\\:*?[\]]/.test(path) ||
+			path.startsWith("/") ||
+			path.split("/").some((p) => [".", "..", ".git"].includes(p))
+		)
+			throw new Error("Observation requires a literal repository-relative path");
+		return (await runGit(this.repositoryRoot, ["ls-tree", "-z", commit, "--", path])).trim() || "ABSENT";
+	}
+
+	async contextPaths(commit: string): Promise<string[]> {
+		return (await runGit(this.repositoryRoot, ["ls-tree", "-rz", "--name-only", commit]))
+			.split("\0")
+			.filter((path) =>
+				/(?:^|\/)(?:(?:AGENTS(?:\.override)?|CLAUDE|GEMINI|CONTEXT|SYSTEM|APPEND_SYSTEM)\.md|\.gitignore|\.ignore|\.rgignore)$/i.test(
+					path,
+				),
+			);
+	}
+
 	async treeHash(commitHash: string): Promise<string> {
 		return this.run(["rev-parse", commitHash + "^{tree}"]);
 	}

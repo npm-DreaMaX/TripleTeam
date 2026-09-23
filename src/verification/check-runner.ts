@@ -37,6 +37,7 @@ export interface ExecutedCheck {
 		timedOut: boolean;
 		integrity?: CheckIntegrity;
 		errorCode?: string;
+		preparation?: { command: string[]; state: string; durationMs: number }[];
 	};
 }
 
@@ -101,6 +102,14 @@ async function execute(command: string[], cwd: string, signal: AbortSignal): Pro
 	return new Promise((resolveOutput) => {
 		const child = spawn(command[0] as string, command.slice(1), {
 			cwd,
+			env: Object.fromEntries(
+				Object.entries(process.env).filter(
+					([key]) =>
+						!/(?:API_?KEY|PRIVATE_?KEY|AUTH_?TOKEN|AUTH_?CONFIG|ACCESS_?KEY|(?:^|_)(?:SECRET|TOKEN|PASSWORD|CREDENTIALS?)(?:_|$))/i.test(
+							key,
+						),
+				),
+			),
 			detached: process.platform !== "win32",
 			stdio: ["ignore", "pipe", "pipe"],
 		});
@@ -261,10 +270,12 @@ export class CheckRunner {
 				let stdout = "";
 				let stderr = "";
 				let timedOut = false;
+				let preparationTimedOut = false;
 				let guard: CheckSourceGuard | undefined;
 				let integrity: CheckIntegrity | undefined;
 				let errorCode: string | undefined;
 				let environment = "";
+				const preparation: NonNullable<ExecutedCheck["result"]["preparation"]> = [];
 				const containerName = specification.isolation ? "tripleteam-check-" + randomUUID() : undefined;
 				try {
 					guard = await CheckSourceGuard.open(
@@ -275,12 +286,28 @@ export class CheckRunner {
 					);
 					integrity = guard.integrity;
 					environment = await environmentHash(context.cwd, command, specification, integrity);
+					if (specification.preparation) {
+						const preparationTimeout = AbortSignal.timeout(specification.preparation.timeoutMs);
+						const preparationSignal = AbortSignal.any([combined, preparationTimeout]);
+						for (const argv of specification.preparation.commands) {
+							const startedPreparation = Date.now();
+							const prepared = await execute(expand(argv, context), context.cwd, preparationSignal);
+							preparationTimedOut ||= preparationTimeout.aborted;
+							preparation.push({ command: argv, state: prepared.state, durationMs: Date.now() - startedPreparation });
+							stdout += prepared.stdout;
+							stderr += prepared.stderr;
+							if (prepared.state !== "PASSED") {
+								errorCode = "CHECK_PREPARATION_FAILED";
+								throw new Error("Frozen verification preparation failed; check command was not executed");
+							}
+						}
+					}
 					const invocation = containerName
 						? await dockerCommand(specification, context, command, containerName)
 						: command;
 					const result = await execute(invocation, context.cwd, combined);
-					stdout = result.stdout;
-					stderr = result.stderr;
+					stdout += result.stdout;
+					stderr += result.stderr;
 					state = result.state;
 					exitCode = result.exitCode;
 					if (containerName && [125, 126, 127].includes(exitCode ?? -1)) {
@@ -296,11 +323,11 @@ export class CheckRunner {
 				} catch (error) {
 					state = error instanceof CheckIntegrityError ? "FAILED" : "ERROR";
 					exitCode = undefined;
-					errorCode = error instanceof CheckIntegrityError ? error.code : "CHECK_RUNTIME_ERROR";
+					errorCode = error instanceof CheckIntegrityError ? error.code : (errorCode ?? "CHECK_RUNTIME_ERROR");
 					stderr += "\n" + (error instanceof Error ? error.message : String(error));
 				} finally {
 					guard?.close();
-					timedOut = timeout.aborted;
+					timedOut = timeout.aborted || preparationTimedOut;
 					if (containerName) {
 						try {
 							await execFileAsync("docker", ["rm", "--force", containerName], { encoding: "utf8", timeout: 10_000 });
@@ -341,7 +368,13 @@ export class CheckRunner {
 					environmentHash:
 						environment || createHash("sha256").update(JSON.stringify({ command, errorCode })).digest("hex"),
 					command,
-					result: { durationMs: Date.now() - started, timedOut, integrity, errorCode },
+					result: {
+						durationMs: Date.now() - started,
+						timedOut,
+						integrity,
+						errorCode,
+						...(preparation.length ? { preparation } : {}),
+					},
 				};
 			},
 			signal,

@@ -13,7 +13,7 @@ test("vendored Pi package exposes the CLI used by the official RPC client", asyn
 	assert.equal(cliPath, resolve("vendor/pi/pi-coding-agent/dist/bundle/cli.js"));
 });
 
-test("standalone runtime exposes four evidence-backed default profiles", async (context) => {
+test("standalone runtime exposes implementation and independent verification profiles", async (context) => {
 	const directory = await mkdtemp(join(tmpdir(), "tripleteam-builtins-"));
 	context.after(() => rm(directory, { recursive: true, force: true }));
 	const previous = process.env.PI_CODING_AGENT_DIR;
@@ -26,7 +26,7 @@ test("standalone runtime exposes four evidence-backed default profiles", async (
 		.listProfiles(process.cwd())
 		.filter((profile) => profile.source === "builtin")
 		.map((profile) => profile.name);
-	assert.deepEqual(names, ["explorer", "implementer", "planner", "reviewer"]);
+	assert.deepEqual(names, ["explorer", "implementer", "planner", "reviewer", "verifier"]);
 });
 
 test("mjakl agent discovery adapter uses the pinned upstream implementation", async (context) => {

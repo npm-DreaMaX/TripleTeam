@@ -32,7 +32,7 @@ Current source comparison supports four built-in product defaults, not a fixed f
 - Warren treats roles as prompt/policy configuration over a harness, while its judge is an optional observer.
 - pi-superagents has more domain-specific profiles because it targets Superpowers workflows; those names are not a universal role ontology.
 
-This product therefore includes `explorer`, `planner`, `implementer`, and `reviewer` as overrideable defaults. Runtime instances are created only when the task graph and policy require them; workflow function and Pi profile identity are stored separately.
+This product therefore includes `explorer`, `planner`, `implementer`, and `reviewer` as overrideable defaults. It also defines a read-only `verifier` profile for independent specification design. Runtime instances are created only when the task graph and policy require them; workflow function and Pi profile identity are stored separately.
 
 ## Why the product does not run inside a subagent extension
 
@@ -46,6 +46,8 @@ Existing extensions assume Pi owns the parent session and extension context. Thi
 Controlled workers pass Pi's public `--no-extensions` flag, which disables ambient extension discovery while still allowing explicitly supplied extension paths. This makes a read-only profile's tool boundary meaningful without reimplementing Pi's tool runtime. Project-level agent definitions are loaded only after Pi's own project trust store approves the repository.
 
 The product uses Pi's official `defineTool` / `registerTool` extension API for one bundled Worker adapter. It exposes only scoped coordination context, typed messaging, and task-change proposals over an attempt-scoped loopback capability. Pi still owns tool dispatch and validation; the adapter has no direct SQLite or integration-ref access. This explicit child-process adapter does not make the standalone control plane a Pi plugin.
+
+The same explicit adapter registers a public `tool_call` hook for every role to keep `grep` and `find` targets inside its worktree. Coordination tools still require the writer capability. Startup checks execute Pi's public search tools against an offline sentinel. RPC waiting uses public `prompt`, `onEvent`, `abort`, `stop` and session statistics, with adapter-owned listener and timer cleanup on interruption. The product terminal uses public `Input`, `Container` and `TuiMainScreen` primitives; its command model and presentation belong to TripleTeam.
 
 The current tintinweb source no longer silently continues in the main checkout when its `AgentManager` requested worktree creation fails: the low-level helper returns `undefined`, and the manager turns that into a startup error. Its cleanup still performs implicit commit/branch creation and best-effort removal, so the product does not directly use that helper for authoritative candidates. This is a domain-boundary decision, not a claim that the current upstream lacks strict startup handling.
 

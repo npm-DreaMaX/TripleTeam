@@ -187,7 +187,7 @@ WHERE t.run_id = ? AND t.state = 'ACTIVE' AND c.state IN ('SUBMITTED', 'ELIGIBLE
 				if (operation.phase === "COMPLETED") {
 					throw new Error("Integration operation claims completion but its Git ref was not published");
 				}
-				this.kernel.assertIntegrationPublishable(integration.id);
+				this.kernel.assertIntegrationPublishable(integration.id, intent.resultTreeHash);
 				await this.journal.execute(operation, async () => {
 					await this.workspaces.publishIntegration({
 						integrationRef: intent.ref,

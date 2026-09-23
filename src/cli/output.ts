@@ -1,4 +1,4 @@
-import { clean, fit, paint, section } from "./theme.ts";
+import { clean, fit, paint } from "./theme.ts";
 
 export interface OutputOptions {
 	json: boolean;
@@ -56,14 +56,15 @@ export function renderResult(value: unknown, title: string, color: boolean, widt
 		lines.push(paint("  ".repeat(depth) + (label ? clean(label) + "  " : ""), "muted", color) + clean(item ?? "—"));
 	}
 	visit(value, "", 0);
-	const rendered =
-		"\n" +
-		paint("  ▰▰▰  TripleTeam", "accent", color, true) +
-		"\n\n" +
-		section(title.toUpperCase(), lines, Math.max(28, Math.min(width - 4, 120)), color)
-			.map((line) => "  " + line)
-			.join("\n") +
-		"\n";
+	const rendered = [
+		"",
+		paint("  TripleTeam", "accent", color, true),
+		"",
+		paint("  " + clean(title), "text", color, true),
+		"",
+		...lines.map((line) => "  " + line),
+		"",
+	].join("\n");
 	return rendered
 		.split("\n")
 		.map((line) => fit(line, Math.max(0, width)))
@@ -73,7 +74,7 @@ export function renderResult(value: unknown, title: string, color: boolean, widt
 export function renderHelp(usage: string, color: boolean): string {
 	return (
 		"\n" +
-		paint("  ▰▰▰  TripleTeam", "accent", color, true) +
+		paint("  TripleTeam", "accent", color, true) +
 		"\n" +
 		paint("  Long tasks. Adaptive execution. Checked delivery.", "muted", color) +
 		"\n\n" +

@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
-import { executionPolicyFor } from "../config/execution.ts";
+import { executionPolicyFor, remainingPlanningBudget } from "../config/execution.ts";
 import type { ProjectPaths } from "../config/paths.ts";
 import type { ProjectConfig } from "../config/project.ts";
 import type { ControlCatalog } from "../control/catalog.ts";
@@ -15,6 +15,12 @@ import {
 } from "../runtime/pi/launcher.ts";
 import type { LiveAttemptRegistry } from "../runtime/pi/live-attempts.ts";
 import { runMetered } from "../runtime/pi/metered-run.ts";
+import {
+	explorationContextVersion,
+	observationsUnchanged,
+	type ReadObservation,
+	ReadObservationCollector,
+} from "../runtime/pi/read-observations.ts";
 import type { GitWorkspaceManager, ManagedWorktree } from "../workspace/git.ts";
 
 export interface ExplorationReport {
@@ -88,6 +94,61 @@ export class PiExplorer {
 				profile,
 			);
 			const taskRevisionId = input.taskId ? this.catalog.getTask(input.taskId).revisionId : null;
+			const goal = this.catalog.getRun(input.runId).goalContract as { verificationPolicyVersion?: number };
+			const contextVersion =
+				goal.verificationPolicyVersion === 1 && executionPolicyFor(goal).enableEvidenceReuse
+					? await explorationContextVersion(this.paths.worktrees)
+					: null;
+			const reuse = contextVersion !== null;
+			const queryHash = createHash("sha256")
+				.update(
+					JSON.stringify({
+						objective: input.objective,
+						question: input.question,
+						hypothesis: input.hypothesis,
+						feedback: input.feedback,
+						purpose: input.purpose,
+						taskRevisionId,
+						profileVersion: profile.version,
+						contextVersion,
+					}),
+				)
+				.digest("hex");
+			if (reuse) {
+				for (const action of this.catalog
+					.listControlActions(input.runId)
+					.filter((a) => a.kind === "EXPLORATION_OBSERVATION")
+					.reverse()) {
+					const stored = JSON.parse(action.detail_json) as {
+						queryHash: string;
+						attemptId: string;
+						baselineCommit: string;
+						report: string;
+						observations: ReadObservation[];
+					};
+					if (stored.queryHash !== queryHash || this.catalog.getAttempt(stored.attemptId).state !== "SUBMITTED")
+						continue;
+					if (!(await observationsUnchanged(this.workspaces, input.baseCommit, stored.observations))) continue;
+					this.kernel.recordControlAction({
+						runId: input.runId,
+						taskId: input.taskId,
+						kind: "EXPLORATION_REUSED",
+						detail: {
+							sourceActionId: action.id,
+							sourceAttemptId: stored.attemptId,
+							inspectedCommit: stored.baselineCommit,
+							revalidatedCommit: input.baseCommit,
+							queryHash,
+							observations: stored.observations,
+						},
+					});
+					return {
+						attemptId: stored.attemptId,
+						question: input.question,
+						report: `Revalidated repository observation from ${stored.baselineCommit}; read dependencies unchanged on ${input.baseCommit}. This report is an observation, not acceptance evidence.\n${stored.report}`,
+					};
+				}
+			}
 			const attemptId = randomUUID();
 			this.kernel.startAuxiliaryAttempt({
 				id: attemptId,
@@ -104,6 +165,7 @@ export class PiExplorer {
 			let bridge: AttemptControlBridge | undefined;
 			let executionId: string | undefined;
 			let unregister: (() => void) | undefined;
+			let stopObserving: (() => void) | undefined;
 			try {
 				worktree = await this.workspaces.createWorktree(attemptId, input.baseCommit);
 				const prompt = explorationPrompt(input.objective, input.question, input.hypothesis, input.feedback);
@@ -138,6 +200,8 @@ export class PiExplorer {
 					profile,
 				);
 				const state = await managed.worker.start();
+				const observations = new ReadObservationCollector(worktree.path);
+				stopObserving = managed.worker.onEvent?.(observations.onEvent);
 				this.kernel.markExecutionLive({ executionId, sessionFile: state.sessionFile, actor });
 				unregister = this.liveAttempts?.register(attemptId, null, managed.worker);
 				const response = await runMetered(managed.worker, {
@@ -148,6 +212,12 @@ export class PiExplorer {
 					attemptId,
 					executionId,
 					phase: input.purpose === "REPLAN" ? "REPLAN" : input.taskId ? "DIVERSE_EXPLORATION" : "PLAN_EXPLORATION",
+					phaseBudget: input.plannerAttemptId
+						? remainingPlanningBudget(
+								executionPolicyFor(this.catalog.getRun(input.runId).goalContract),
+								this.catalog.planningUsage(input.runId),
+							)
+						: undefined,
 					prompt,
 					timeoutMs: this.config.workerTimeoutMs,
 				});
@@ -171,6 +241,20 @@ export class PiExplorer {
 				});
 				this.kernel.finishExecution({ executionId, state: "EXITED", exitCode: 0, actor });
 				this.kernel.completeAuxiliaryAttempt(attemptId, actor);
+				const dependencies = reuse ? await observations.freeze(this.workspaces, input.baseCommit) : null;
+				if (dependencies)
+					this.kernel.recordControlAction({
+						runId: input.runId,
+						taskId: input.taskId,
+						kind: "EXPLORATION_OBSERVATION",
+						detail: {
+							queryHash,
+							attemptId,
+							baselineCommit: input.baseCommit,
+							report: report.slice(0, 16_000),
+							observations: dependencies,
+						},
+					});
 				return { attemptId, question: input.question, report };
 			} catch (error) {
 				if (executionId) {
@@ -192,6 +276,7 @@ export class PiExplorer {
 				}
 				throw error;
 			} finally {
+				stopObserving?.();
 				unregister?.();
 				await managed?.close();
 				await bridge?.stop();

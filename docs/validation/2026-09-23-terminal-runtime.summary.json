@@ -1,0 +1,320 @@
+{
+  "protocol": "controlled-interactive-cli-development-v1",
+  "date": "2026-09-23",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "runs": [
+    {
+      "run": {
+        "id": "3cdf2320-6237-4662-8a49-aa7fefcf3463",
+        "state": "BLOCKED",
+        "input_commit": "51e6bd93d51f0aeffd08b8f975dfb013d87e8169",
+        "integration_head": "51e6bd93d51f0aeffd08b8f975dfb013d87e8169",
+        "integration_tree_hash": "2a047e59f822b2850f70c7e7626922e8f126da0d",
+        "created_at": "2026-09-23T07:38:42.830Z",
+        "updated_at": "2026-09-23T07:41:07.876Z",
+        "terminal_reason": "No runnable tasks remain; at least one task or dependency is blocked"
+      },
+      "delivery": {
+        "result": "BLOCKED",
+        "final_commit": "51e6bd93d51f0aeffd08b8f975dfb013d87e8169",
+        "final_tree_hash": "2a047e59f822b2850f70c7e7626922e8f126da0d",
+        "delivery_ref": null
+      },
+      "ui": {
+        "startedAt": 1790149120.22497,
+        "entry": "default interactive CLI",
+        "runtimeHashes": {
+          "cli.js": "a831e72caa463ed0e7b41ca246ee158a7424d8c1662b41289546a32dc53660fe",
+          "control-extension.js": "cca05958616581357435206a65ad5f1e55501a9abf331c6e2cb5db98e9ed9971"
+        },
+        "runtimeHumanAnswers": 0,
+        "manualCodeChanges": 0,
+        "settingsShown": true,
+        "run": {
+          "id": "3cdf2320-6237-4662-8a49-aa7fefcf3463",
+          "state": "BLOCKED",
+          "integration_head": "51e6bd93d51f0aeffd08b8f975dfb013d87e8169",
+          "input_commit": "51e6bd93d51f0aeffd08b8f975dfb013d87e8169"
+        },
+        "deliveryVisible": true,
+        "exitCode": 0,
+        "finishedAt": 1790149271.4164963,
+        "commands": [
+          {
+            "elapsed": 2.0,
+            "input": "/settings execution.maxParallelism"
+          },
+          {
+            "elapsed": 2.5,
+            "input": "Implement parse_ranges and format_ranges exactly as documented in README.md. Preserve the acceptance test and handle signed ranges, duplicate inputs, malformed input and literal output format. Finish the implementation and verify it."
+          },
+          {
+            "elapsed": 5.0,
+            "input": "/status"
+          },
+          {
+            "elapsed": 5.93,
+            "input": "/tasks"
+          },
+          {
+            "elapsed": 148.67,
+            "input": "/delivery"
+          },
+          {
+            "elapsed": 151.18,
+            "input": "/quit"
+          }
+        ]
+      },
+      "estimatedCostUsd": 0.040562124,
+      "usageByPhase": [
+        {
+          "phase": "SINGLE",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "durationMs": 145040
+        },
+        {
+          "phase": "SPECIFICATION_DESIGN",
+          "records": 2,
+          "estimatedCostUsd": 0.040562124,
+          "inputTokens": 9881,
+          "outputTokens": 31016,
+          "cacheReadTokens": 63104,
+          "cacheWriteTokens": 0,
+          "durationMs": 141859
+        }
+      ],
+      "checks": [],
+      "designRejections": [
+        "Invalid source path",
+        "Expected ',' or ']' after array element in JSON at position 3132 (line 1 column 3133)"
+      ],
+      "transcriptSha256": "42226d27c04680fb5b84c216936d7f72ccf04e2c848c7aefbf20c857a934ec48"
+    },
+    {
+      "run": {
+        "id": "416ef279-6fe8-48f8-b403-7f0b38cacf97",
+        "state": "COMPLETED",
+        "input_commit": "51e6bd93d51f0aeffd08b8f975dfb013d87e8169",
+        "integration_head": "13a5e6e3f243f3791585a56638fed37e74e897a2",
+        "integration_tree_hash": "83eb643ad0e44d6d37f6eddc628b532d35b32ebb",
+        "created_at": "2026-09-23T07:52:04.294Z",
+        "updated_at": "2026-09-23T07:54:40.067Z",
+        "terminal_reason": null
+      },
+      "delivery": {
+        "result": "VERIFIED_DELIVERY",
+        "final_commit": "13a5e6e3f243f3791585a56638fed37e74e897a2",
+        "final_tree_hash": "83eb643ad0e44d6d37f6eddc628b532d35b32ebb",
+        "delivery_ref": "refs/heads/tripleteam-deliveries/416ef279-6fe8-48f8-b403-7f0b38cacf97"
+      },
+      "ui": {
+        "startedAt": 1790149921.7025628,
+        "entry": "default interactive CLI",
+        "runtimeHashes": {
+          "cli.js": "76bfac666a6dd50f3c1346ae0dabe658873b27fe23e1279c15b9531637b9f4fe",
+          "control-extension.js": "cca05958616581357435206a65ad5f1e55501a9abf331c6e2cb5db98e9ed9971"
+        },
+        "runtimeHumanAnswers": 0,
+        "manualCodeChanges": 0,
+        "settingsShown": true,
+        "run": {
+          "id": "416ef279-6fe8-48f8-b403-7f0b38cacf97",
+          "state": "COMPLETED",
+          "integration_head": "13a5e6e3f243f3791585a56638fed37e74e897a2",
+          "input_commit": "51e6bd93d51f0aeffd08b8f975dfb013d87e8169"
+        },
+        "deliveryVisible": true,
+        "exitCode": 0,
+        "finishedAt": 1790150083.7315419,
+        "commands": [
+          {
+            "elapsed": 2.0,
+            "input": "/settings execution.maxParallelism"
+          },
+          {
+            "elapsed": 2.5,
+            "input": "Implement parse_ranges and format_ranges exactly as documented in README.md. Preserve the acceptance test and handle signed ranges, duplicate inputs, malformed input and literal output format. Finish the implementation and verify it."
+          },
+          {
+            "elapsed": 5.01,
+            "input": "/status"
+          },
+          {
+            "elapsed": 5.91,
+            "input": "/tasks"
+          },
+          {
+            "elapsed": 6.42,
+            "input": "/status"
+          },
+          {
+            "elapsed": 159.52,
+            "input": "/delivery"
+          },
+          {
+            "elapsed": 162.02,
+            "input": "/quit"
+          }
+        ]
+      },
+      "estimatedCostUsd": 0.037247772,
+      "usageByPhase": [
+        {
+          "phase": "CANDIDATE:public-acceptance",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "durationMs": 1426
+        },
+        {
+          "phase": "IMPLEMENT",
+          "records": 1,
+          "estimatedCostUsd": 0.007168116,
+          "inputTokens": 9307,
+          "outputTokens": 3383,
+          "cacheReadTokens": 52736,
+          "cacheWriteTokens": 0,
+          "durationMs": 20576
+        },
+        {
+          "phase": "INDEPENDENT_PROBE",
+          "records": 18,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "durationMs": 23992
+        },
+        {
+          "phase": "INTEGRATION:public-acceptance",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "durationMs": 1574
+        },
+        {
+          "phase": "PROBE_CONTROL",
+          "records": 3,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "durationMs": 4831
+        },
+        {
+          "phase": "PROBE_CRITIQUE",
+          "records": 1,
+          "estimatedCostUsd": 0.007846368,
+          "inputTokens": 4604,
+          "outputTokens": 5323,
+          "cacheReadTokens": 12928,
+          "cacheWriteTokens": 0,
+          "durationMs": 27537
+        },
+        {
+          "phase": "REVIEW",
+          "records": 1,
+          "estimatedCostUsd": 0.0076303679999999985,
+          "inputTokens": 5496,
+          "outputTokens": 4920,
+          "cacheReadTokens": 12928,
+          "cacheWriteTokens": 0,
+          "durationMs": 25249
+        },
+        {
+          "phase": "RUN:public-acceptance",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "durationMs": 1284
+        },
+        {
+          "phase": "SINGLE",
+          "records": 1,
+          "estimatedCostUsd": null,
+          "inputTokens": null,
+          "outputTokens": null,
+          "cacheReadTokens": null,
+          "cacheWriteTokens": null,
+          "durationMs": 146784
+        },
+        {
+          "phase": "SPECIFICATION_DESIGN",
+          "records": 1,
+          "estimatedCostUsd": 0.01460292,
+          "inputTokens": 2726,
+          "outputTokens": 11462,
+          "cacheReadTokens": 5120,
+          "cacheWriteTokens": 0,
+          "durationMs": 45488
+        }
+      ],
+      "checks": [
+        {
+          "subject": "CANDIDATE",
+          "state": "PASSED",
+          "count": 7
+        },
+        {
+          "subject": "INTEGRATION",
+          "state": "PASSED",
+          "count": 7
+        },
+        {
+          "subject": "RUN",
+          "state": "PASSED",
+          "count": 10
+        }
+      ],
+      "designRejections": [],
+      "transcriptSha256": "cf72f9bd9564c5a0b4a050e2f6ca75d09d6790c316f9cb108b6df482f7251403"
+    }
+  ],
+  "benchmark": false,
+  "runtimeHumanAnswers": 0,
+  "manualSolutionEdits": 0,
+  "terminalSignals": {
+    "results": [
+      {
+        "input": "keyboard",
+        "exit": 130,
+        "restored": true
+      },
+      {
+        "input": "SIGINT",
+        "exit": 130,
+        "restored": true
+      },
+      {
+        "input": "SIGTERM",
+        "exit": 143,
+        "restored": true
+      },
+      {
+        "input": "quit",
+        "exit": 0,
+        "restored": true
+      }
+    ],
+    "demo_zero_files": true,
+    "viewport_cleared": true
+  }
+}

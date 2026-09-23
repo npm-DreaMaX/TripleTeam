@@ -20,6 +20,7 @@ export interface BenchmarkManifest {
 	provider: string;
 	replicate: string;
 	executionConfigHash: string;
+	runtimeConfigHashes?: Record<string, string>;
 	budget: { costUsd: number; tokens: number; deadlineMs: number; maxExecutions: number };
 	protocol: {
 		humanMode: "DISABLED";
@@ -87,6 +88,15 @@ export function validateManifest(value: unknown): BenchmarkManifest {
 	) {
 		throw new Error("instanceIds must contain unique, non-empty benchmark identifiers");
 	}
+	if (
+		manifest.runtimeConfigHashes !== undefined &&
+		(!manifest.runtimeConfigHashes ||
+			typeof manifest.runtimeConfigHashes !== "object" ||
+			Array.isArray(manifest.runtimeConfigHashes) ||
+			Object.keys(manifest.runtimeConfigHashes).length !== manifest.instanceIds.length ||
+			manifest.instanceIds.some((id) => !/^[a-f0-9]{64}$/.test(manifest.runtimeConfigHashes?.[id] ?? "")))
+	)
+		throw new Error("runtimeConfigHashes must freeze a complete configuration digest for every planned instance");
 	for (const key of ["costUsd", "tokens", "deadlineMs", "maxExecutions"] as const) {
 		if (!Number.isFinite(manifest.budget?.[key]) || manifest.budget[key] <= 0) {
 			throw new Error(`budget.${key} must be positive and finite`);

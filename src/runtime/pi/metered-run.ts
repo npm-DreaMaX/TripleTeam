@@ -4,6 +4,7 @@ import type { ControlCatalog } from "../../control/catalog.ts";
 import type { ControlKernel } from "../../control/kernel.ts";
 import { DomainInvariantError } from "../../domain/model.ts";
 import type { PiWorkerController } from "./launcher.ts";
+import { PiProviderUnavailableError } from "./provider-error.ts";
 import type { PiRunResult, PiUsage } from "./rpc-worker.ts";
 
 const zero = (): PiUsage => ({
@@ -28,18 +29,35 @@ export async function runMetered(
 		phase: string;
 		prompt: string;
 		timeoutMs: number;
+		/** Control-plane allocation; Pi still performs steer/abort and owns its loop. */
+		phaseBudget?: { tokenLimit: number; toolCallLimit: number; durationMs: number; label: string };
 	},
 ): Promise<PiRunResult> {
 	const id = randomUUID();
 	const startedAt = new Date().toISOString();
 	const policy = executionPolicyFor(input.catalog.getRun(input.runId).goalContract);
-	input.kernel.reserveCompute({ id, runId: input.runId, executionId: input.executionId });
+	if (
+		input.phaseBudget &&
+		(input.phaseBudget.tokenLimit <= 0 || input.phaseBudget.toolCallLimit <= 0 || input.phaseBudget.durationMs <= 0)
+	)
+		throw new DomainInvariantError(
+			"PHASE_BUDGET_EXHAUSTED",
+			`${input.phaseBudget.label} exhausted its compute allocation`,
+		);
+	input.kernel.reserveCompute({
+		id,
+		runId: input.runId,
+		executionId: input.executionId,
+		tokenReservationCap: input.phaseBudget?.tokenLimit,
+		costReservationCap: input.phaseBudget && policy.costLimitUsd !== undefined ? policy.costLimitUsd * 0.2 : undefined,
+	});
 	const initial = worker.usageSnapshot?.() ?? zero();
 	let usage = zero();
 	let completed = false;
 	let observed = false;
 	let stopped: Error | undefined;
 	let resolvedModel: unknown = null;
+	let phaseWarningSent = false;
 	let rejectBudget: (error: Error) => void = () => {};
 	const budgetFailure = new Promise<never>((_, reject) => {
 		rejectBudget = reject;
@@ -65,6 +83,7 @@ export async function runMetered(
 				unreportedInFlight: final && !completed,
 				budgetStop: stopped?.message ?? null,
 				resolvedModel,
+				phaseBudget: input.phaseBudget,
 			},
 		});
 	};
@@ -88,6 +107,26 @@ export async function runMetered(
 					"UNKNOWN_MODEL_PRICE",
 					"A cost-limited run requires a configured Pi model price; zero/unreported price cannot be treated as free compute",
 				);
+			}
+			const phase = input.phaseBudget;
+			if (phase) {
+				const tokens = usage.inputTokens + usage.outputTokens + usage.cacheReadTokens + usage.cacheWriteTokens;
+				const elapsed = Date.now() - Date.parse(startedAt);
+				if (tokens >= phase.tokenLimit || usage.toolCalls >= phase.toolCallLimit || elapsed >= phase.durationMs)
+					throw new DomainInvariantError("PHASE_BUDGET_EXHAUSTED", `${phase.label} exhausted its compute allocation`);
+				if (
+					!phaseWarningSent &&
+					(tokens >= phase.tokenLimit * 0.7 ||
+						usage.toolCalls >= phase.toolCallLimit * 0.7 ||
+						elapsed >= phase.durationMs * 0.7)
+				) {
+					phaseWarningSent = true;
+					void worker
+						.steer(
+							`${phase.label} has used most of its allocated compute. Stop further investigation and return the requested final structured result now, using the evidence already available. Remaining compute is reserved for implementation and verification.`,
+						)
+						.catch(() => {});
+				}
 			}
 		} catch (error) {
 			stopped = error instanceof Error ? error : new Error(String(error));
@@ -116,7 +155,10 @@ export async function runMetered(
 	watchdog.unref();
 	try {
 		persist();
+		if (input.phaseBudget) enforce();
+		if (stopped) throw stopped;
 		const runtime = await Promise.race([worker.state(), budgetFailure]);
+		if (stopped) throw stopped;
 		resolvedModel = {
 			provider: runtime.model?.provider ?? null,
 			model: runtime.model?.id ?? null,
@@ -132,6 +174,16 @@ export async function runMetered(
 		if (stopped) throw stopped;
 		completed = true;
 		return result;
+	} catch (error) {
+		if (error instanceof PiProviderUnavailableError)
+			input.kernel.recordControlAction({
+				runId: input.runId,
+				taskId: input.taskId,
+				kind: "PROVIDER_UNAVAILABLE",
+				state: "BLOCKED",
+				detail: { reason: error.message, category: error.category, resolvedModel, executionId: input.executionId },
+			});
+		throw error;
 	} finally {
 		clearInterval(watchdog);
 		unsubscribe?.();

@@ -10,8 +10,14 @@ import {
 	benchmarkGit,
 	publishMilestoneTag,
 } from "../../src/benchmark/artifact.ts";
+import { compareFeatureBench, type ExperimentResults } from "../../src/benchmark/comparison.ts";
 import { importFeatureBenchVerdicts } from "../../src/benchmark/evaluator.ts";
-import { collectFeatureBench, exportFeatureBench, parseFeatureBenchTask } from "../../src/benchmark/featurebench.ts";
+import {
+	assertBenchmarkConfiguration,
+	collectFeatureBench,
+	exportFeatureBench,
+	parseFeatureBenchTask,
+} from "../../src/benchmark/featurebench.ts";
 import { BenchmarkLedger } from "../../src/benchmark/ledger.ts";
 import {
 	BENCHMARK_REVISIONS,
@@ -27,6 +33,63 @@ import { runFeatureBench } from "../../src/benchmark/runner.ts";
 import { checkCommandVersion } from "../../src/config/project.ts";
 
 const system = { kind: "SYSTEM", id: "benchmark-contract-test" } as const;
+
+test("paired comparison retains failure costs, rejects protocol drift and withholds missing-data claims", () => {
+	const experiment = (model: string, results: boolean[]): ExperimentResults => {
+		const frozen = freezeManifest({ ...manifest(), model });
+		const trials = frozen.manifest.instanceIds.map(
+			(instanceId): BenchmarkTrial => ({
+				schema: "tripleteam-benchmark-trial/v1",
+				manifestHash: frozen.sha256,
+				instanceId,
+				runId: instanceId,
+				state: "SUBMITTED",
+				deliveryResult: "STRUCTURAL_HANDOFF",
+				commit: "c".repeat(40),
+				tree: "e".repeat(40),
+				startedAt: "2026-01-01T00:00:00Z",
+				finishedAt: "2026-01-01T00:00:01Z",
+				error: null,
+				usage: { ...aggregateUsage([], 0), knownCostUsd: 1 },
+			}),
+		);
+		return {
+			frozen,
+			trials,
+			verdicts: trials.map((trial, index) => ({
+				instanceId: trial.instanceId,
+				manifestHash: frozen.sha256,
+				tree: trial.tree as string,
+				resolved: results[index] as boolean,
+			})),
+		};
+	};
+	const left = experiment("a", [true, true]),
+		right = experiment("b", [true, false]);
+	const compared = compareFeatureBench(left, right);
+	assert.equal(compared.paired.resolveRateDifference, 0.5);
+	assert.equal(compared.cost.leftCostPerResolvedUsd, 1);
+	assert.equal(compared.cost.rightCostPerResolvedUsd, 2); // Failed attempts still cost money.
+	assert.match(compared.interpretation, /Product-plus-model/);
+	assert.ok(compared.paired.repositoryClusterBootstrap95);
+	const incomplete = {
+		...left,
+		verdicts: left.verdicts.slice(1),
+		trials: left.trials.map((t) => ({ ...t, usage: { ...t.usage, costComplete: false } })),
+	};
+	const missing = compareFeatureBench(incomplete, right);
+	assert.equal(missing.paired.resolveRateDifference, null);
+	assert.equal(missing.paired.repositoryClusterBootstrap95, null);
+	assert.equal(missing.cost.totalDifferenceUsd, null);
+	assert.throws(
+		() =>
+			compareFeatureBench(left, {
+				...right,
+				frozen: freezeManifest({ ...right.frozen.manifest, budget: { ...right.frozen.manifest.budget, costUsd: 11 } }),
+			}),
+		/same frozen/,
+	);
+});
 
 function manifest(benchmark: "featurebench" | "swe-milestone" = "featurebench"): BenchmarkManifest {
 	return {
@@ -71,6 +134,7 @@ async function fixture(context: test.TestContext) {
 	await writeFile(
 		join(repository, ".tripleteam.json"),
 		JSON.stringify({
+			assurance: { mode: "off" }, // This fixture fabricates deliveries to test the evaluator adapter.
 			execution: {
 				decisionMode: "noninteractive",
 				provider: "fixture",
@@ -108,7 +172,11 @@ async function integrateFixture(orchestrator: LocalOrchestrator, runId: string, 
 		objective: "Implement fixture",
 		scope: ["feature.txt"],
 		constraints: [],
-		acceptanceContract: { candidateChecks: checks, integrationChecks: checks, requireReview: false },
+		acceptanceContract: {
+			candidateChecks: checks,
+			integrationChecks: orchestrator.config.integrationChecks,
+			requireReview: false,
+		},
 		riskClass: "LOW",
 		actor: system,
 	});
@@ -182,6 +250,25 @@ test("manifest pins evaluator/data/images, detects tampering, and cannot overwri
 	);
 	await writeFile(path, JSON.stringify({ ...frozen, manifest: { ...value, model: "changed" } }));
 	await assert.rejects(readFrozenManifest(path), /modified/);
+});
+
+test("full instance configuration pins check scope and preparation before any model invocation", async (context) => {
+	const f = await fixture(context);
+	const digest = hashJson(JSON.parse(JSON.stringify(f.orchestrator.config)));
+	const frozen = freezeManifest({ ...f.input, runtimeConfigHashes: { "task-1": digest, "task-2": digest } });
+	assertBenchmarkConfiguration(f.orchestrator, frozen, "task-1");
+	f.orchestrator.config.integrationChecks = [
+		{
+			...f.orchestrator.config.integrationChecks[0],
+			name: "weakened",
+		} as (typeof f.orchestrator.config.integrationChecks)[number],
+	];
+	assert.throws(() => assertBenchmarkConfiguration(f.orchestrator, frozen, "task-1"), /checks, preparation/);
+	assert.throws(
+		() => freezeManifest({ ...f.input, runtimeConfigHashes: { "task-1": digest } }),
+		/every planned instance/,
+	);
+	assert.equal(f.orchestrator.database.sql.prepare("SELECT COUNT(*) AS n FROM executions").get<{ n: number }>()?.n, 0);
 });
 
 test("FeatureBench export submits the integration tree, preserves failed runs, and excludes dirty user HEAD", async (context) => {

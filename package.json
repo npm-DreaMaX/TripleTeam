@@ -34,8 +34,8 @@
 	"type": "module",
 	"bin": {
 		"tripleteam": "./dist/cli.js",
-		"tripleteamd": "./dist/daemon.js",
-		"tripleteam-benchmark": "./dist/benchmark.js"
+		"tripleteam-benchmark": "./dist/benchmark.js",
+		"tripleteamd": "./dist/daemon.js"
 	},
 	"scripts": {
 		"build": "esbuild src/cli/main.ts --bundle --platform=node --format=esm --external:@earendil-works/* --outfile=dist/cli.js && esbuild src/daemon/main.ts --bundle --platform=node --format=esm --external:@earendil-works/* --outfile=dist/daemon.js && esbuild src/runtime/pi/control-extension.ts --bundle --platform=node --format=esm --external:@earendil-works/* --outfile=dist/control-extension.js && esbuild src/benchmark/main.ts --bundle --platform=node --format=esm --external:@earendil-works/* --outfile=dist/benchmark.js",

@@ -11,12 +11,15 @@ import {
 	type ProjectConfig,
 	parseCheckCommand,
 } from "../config/project.ts";
+import { DomainInvariantError } from "../domain/model.ts";
 import { PiExplorer } from "../exploration/explorer.ts";
 import type { PiReviewer } from "../review/reviewer.ts";
 import { AttemptControlBridge, type TaskProposalDefaults } from "../runtime/pi/control-bridge.ts";
 import { assertFrozenProfile, type PiWorkerLauncher } from "../runtime/pi/launcher.ts";
 import type { LiveAttemptRegistry } from "../runtime/pi/live-attempts.ts";
 import { runMetered } from "../runtime/pi/metered-run.ts";
+import { AssuranceService } from "../verification/assurance-service.ts";
+import { baselineReceipt } from "../verification/baseline.ts";
 import type { CheckRunner } from "../verification/check-runner.ts";
 import type { GitWorkspaceManager, ManagedWorktree, SealedCandidate } from "../workspace/git.ts";
 import type { ControlCatalog, TaskDefinition } from "./catalog.ts";
@@ -105,6 +108,7 @@ function scopeFailure(task: TaskDefinition, candidate: SealedCandidate): string 
 
 export class TaskExecutor {
 	private readonly failurePolicy: FailurePolicy;
+	private readonly assurance: AssuranceService;
 
 	constructor(
 		private readonly kernel: ControlKernel,
@@ -120,6 +124,17 @@ export class TaskExecutor {
 		private readonly liveAttempts?: LiveAttemptRegistry,
 	) {
 		this.failurePolicy = new FailurePolicy(kernel, catalog, config);
+		this.assurance = new AssuranceService({
+			kernel,
+			catalog,
+			workspaces,
+			launcher,
+			checks,
+			resources,
+			paths,
+			config,
+			liveAttempts,
+		});
 	}
 
 	async execute(taskId: string): Promise<TaskExecutionOutcome> {
@@ -153,11 +168,19 @@ export class TaskExecutor {
 		let candidate: SealedCandidate | undefined;
 		let candidateId: string | undefined;
 		try {
-			await new ContractVerifier(this.kernel, this.catalog, this.workspaces).bindRequirements(
+			const verificationPlan = await this.assurance.ensure(task);
+			if (verificationPlan)
+				feedback +=
+					"\nIndependent public specification obligations: " +
+					JSON.stringify(verificationPlan.definition.obligations) +
+					"\nUnresolved assumptions: " +
+					JSON.stringify(verificationPlan.definition.assumptions);
+			const bindings = await new ContractVerifier(this.kernel, this.catalog, this.workspaces).bindRequirements(
 				task.id,
 				attemptId,
 				run.integrationHead,
 			);
+			feedback += "\nVerified upstream interfaces at this baseline: " + JSON.stringify(bindings);
 			worktree = await this.createWriterWorktree(attemptId, run.integrationHead);
 			const priorCandidate = this.catalog.latestCandidate(task.id);
 			if (priorCandidate && candidateScopeViolations(priorCandidate.changedPaths, task.scope).length === 0) {
@@ -270,12 +293,14 @@ export class TaskExecutor {
 			});
 		} catch (error) {
 			const detail = error instanceof Error ? error.message : String(error);
+			const designExhausted = error instanceof DomainInvariantError && error.code === "ASSURANCE_DESIGN_EXHAUSTED";
 			const diagnosis = this.failurePolicy.diagnose({
 				runId: run.id,
 				taskId: task.id,
 				attemptId,
-				phase: "IMPLEMENT_RUNTIME",
-				classification: "INFRASTRUCTURE",
+				phase: designExhausted ? "SPECIFICATION_DESIGN" : "IMPLEMENT_RUNTIME",
+				classification: designExhausted ? "VERIFICATION" : "INFRASTRUCTURE",
+				recoveryExhausted: designExhausted,
 				detail,
 			});
 			this.tryFailRunningAttempt(attemptId, error, diagnosis.retryTask);
@@ -314,7 +339,7 @@ export class TaskExecutor {
 		}
 		const contract = parseContract(task.acceptanceContract);
 		const proposalDefaults = acceptancePolicyForRun(run.goalContract, this.config);
-		const feedback = await this.failureFeedback(task.id, attempt.id);
+		let feedback = await this.failureFeedback(task.id, attempt.id);
 		const profile = this.launcher.resolveProfile(
 			run.repositoryRoot,
 			attempt.profileName,
@@ -341,11 +366,12 @@ export class TaskExecutor {
 		let candidate: SealedCandidate | undefined;
 		let candidateId: string | undefined;
 		try {
-			await new ContractVerifier(this.kernel, this.catalog, this.workspaces).bindRequirements(
+			const bindings = await new ContractVerifier(this.kernel, this.catalog, this.workspaces).bindRequirements(
 				task.id,
 				attempt.id,
 				attempt.baseCommit,
 			);
+			feedback += "\nVerified upstream interfaces at this baseline: " + JSON.stringify(bindings);
 			worktree = await this.workspaces.recoverWorktree(attempt.id, attempt.baseCommit);
 			const startOperation = this.journal.find("START_WORKER", attempt.id);
 			if (startOperation?.phase !== "COMPLETED") {
@@ -488,7 +514,7 @@ export class TaskExecutor {
 		const { task, run, candidate, candidateId, contract, retryAllowed } = input;
 		const actor = { kind: "SYSTEM", id: "task-executor" } as const;
 		try {
-			const candidateChecks = await this.runChecks({
+			let candidateChecks = await this.runChecks({
 				runId: run.id,
 				taskId: task.id,
 				subjectKind: "CANDIDATE",
@@ -499,6 +525,24 @@ export class TaskExecutor {
 				runInputCommit: run.inputCommit,
 				checks: contract.candidateChecks,
 			});
+			if (candidateChecks.status === "PASSED") {
+				const independent = await this.assurance.evaluate([task.id], candidate.commitHash, "CANDIDATE", candidateId);
+				candidateChecks = {
+					status: independent.status,
+					checkIds: [...candidateChecks.checkIds, ...independent.checkIds],
+					diagnosis:
+						independent.status === "PASSED"
+							? undefined
+							: this.failurePolicy.diagnose({
+									runId: run.id,
+									taskId: task.id,
+									phase: "INDEPENDENT_VERIFY",
+									classification: independent.status === "ERROR" ? "INFRASTRUCTURE" : "VERIFICATION",
+									detail: independent.detail,
+									evidenceRefs: independent.checkIds,
+								}),
+				};
+			}
 			if (candidateChecks.status !== "PASSED") {
 				const infrastructureError = candidateChecks.status === "ERROR";
 				const reason = infrastructureError
@@ -686,6 +730,19 @@ export class TaskExecutor {
 			})),
 		);
 		const feedback = {
+			baseline: await Promise.all(
+				this.catalog
+					.checkEvidence(
+						baselineReceipt(this.catalog, run.id)
+							?.checks.filter((c) => c.state !== "PASSED")
+							.map((c) => c.checkId) ?? [],
+					)
+					.map(async (check) => ({
+						...check,
+						stdoutTail: await this.readEvidenceTail(check.stdoutPath),
+						stderrTail: await this.readEvidenceTail(check.stderrPath),
+					})),
+			),
 			coordination: {
 				assessment: this.catalog.getCoordinationAssessment(taskId),
 				contract: this.catalog.getCoordinationContract(taskId),
@@ -945,6 +1002,25 @@ export class TaskExecutor {
 					runInputCommit: run.inputCommit,
 					checks: input.contract.integrationChecks,
 				});
+				if (integrationChecks.status === "PASSED") {
+					const tasks = [...new Set([...this.catalog.listTasks(run.id, ["ACCEPTED"]).map((t) => t.id), input.taskId])];
+					const independent = await this.assurance.evaluate(tasks, prepared.commitHash, "INTEGRATION", integrationId);
+					integrationChecks = {
+						status: independent.status,
+						checkIds: [...integrationChecks.checkIds, ...independent.checkIds],
+						diagnosis:
+							independent.status === "PASSED"
+								? undefined
+								: this.failurePolicy.diagnose({
+										runId: run.id,
+										taskId: input.taskId,
+										phase: "INDEPENDENT_INTEGRATION",
+										classification: independent.status === "ERROR" ? "INFRASTRUCTURE" : "VERIFICATION",
+										detail: independent.detail,
+										evidenceRefs: independent.checkIds,
+									}),
+					};
+				}
 			} catch (error) {
 				const reason = error instanceof Error ? error.message : String(error);
 				const diagnosis = this.failurePolicy.diagnose({
@@ -1054,7 +1130,7 @@ export class TaskExecutor {
 				idempotencyKey: "publish-integration:" + integrationId,
 			});
 			try {
-				this.kernel.assertIntegrationPublishable(integrationId);
+				this.kernel.assertIntegrationPublishable(integrationId, prepared.treeHash);
 				await this.journal.execute(operation, async () => {
 					await this.workspaces.publishIntegration({
 						integrationRef: run.integrationRef,

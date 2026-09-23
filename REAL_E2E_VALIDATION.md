@@ -2,7 +2,11 @@
 
 验收日期：2026-09-21 至 2026-09-22（Asia/Shanghai）
 
-> 历史真实模型运行记录：本文件证明当时版本的五个受控场景。后续审查与修复没有重跑付费 Pi/API；当前实现的 121 项回归、Docker 检查和独立盲题记录见 [实施结果](docs/IMPLEMENTATION_STATUS.md)。不能把本文件的历史 PASS 当作新版完整模型端到端测试或性能成绩。
+> 本轮源码交付与回归见 [最终交付记录](docs/validation/2026-09-23-final-handoff.md)。[Atlas 开发试跑](docs/validation/2026-09-23-atlas-development.md)保留四次未完成结果，最后一次由供应商 HTTP 402 余额不足中断；不把旧版本的成功记录当作新工作流已经完成。
+
+> 历史真实模型运行记录：本文件保留 9 月 21–22 日版本的五个受控场景。9 月 23 日的新版本另已通过两次 [真实 Pi 单目标交付](docs/validation/2026-09-23-controlled-runtime.md) 与一次 [双任务及自动修复交付](docs/validation/2026-09-23-two-module-runtime.md)。各版本证据分别记录，不能把受控场景通过当作 benchmark 或跨产品性能成绩。当前边界见 [实施结果](docs/IMPLEMENTATION_STATUS.md)。
+
+> 最新 [交互终端 API 试跑](docs/validation/2026-09-23-terminal-runtime.md)记录了一次设计协议失败及后续修复后的交付；[FeatureBench 开发试跑](docs/validation/2026-09-23-featurebench-development.md)记录五次阻塞与独立评分的未解决结果。全部结果保留，避免只展示成功样例。
 
 > 版本说明：下面五个场景记录的是使用真实 Pi / DeepSeek V4.1 Flash 完成的运行证据。其后项目新增了 Adaptive Coordination Layer、first-class DecisionRequest、FailureDiagnosis/Disposition 和 Kernel-owned frozen-contract acceptance；这次上层改动没有冒充成一次新的模型 benchmark。当时源码另经 51 项 contract/regression tests、静态检查、生产构建与 `doctor` 验证通过。原始真实 E2E 结论保留，用于证明底层并行、隔离、恢复与集成语义；新增策略能力的边界以 `调研.md` 和当前测试为准。
 >

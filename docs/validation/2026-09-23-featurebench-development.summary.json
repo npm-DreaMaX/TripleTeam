@@ -1,0 +1,1794 @@
+{
+  "schema": "tripleteam-featurebench-development-validation/v1",
+  "date": "2026-09-23",
+  "instance_id": "pypa__hatch.ff4b4040.test_fmt.782c88a8.lv1",
+  "protocol": {
+    "classification": "DEVELOPMENT_RERUN_SERIES_NOT_A_FORMAL_BENCHMARK_SCORE",
+    "same_public_task_reused": true,
+    "retain_all_trials": true,
+    "model_execution_via": "TripleTeam/Pi",
+    "preparer_read_task_statement": false,
+    "preparer_read_repository_source": false,
+    "preparer_read_agent_dialogues": false,
+    "cost_scope": "Runtime-reported cumulative usage; not independently reconciled provider invoices.",
+    "unknown_usage_policy": "Null/incomplete/live/missing execution usage remains unknown; known costs and tokens are lower bounds.",
+    "wall_time_policy": "Logical terminal timestamps and observed CLI process exit are reported separately; process intervals overlap and must not be summed as sequential elapsed time.",
+    "intervention_policy": "Recorded human:false means no in-run task answering; the series includes human-supervised runtime/config/tool-environment fixes between trials.",
+    "frozen_v5_runtime": "No hot update; the subsequently fixed RPC wait cleanup is outside v5 frozen hashes.",
+    "official_evaluation_performed_after_seal": true,
+    "hidden_tests_executed": false,
+    "hidden_feedback_to_solver": false,
+    "preparer_reading_declaration_scope": "The no-reading declaration covers only this independent task preparation and metadata-summary work; it is not a blanket claim about all historical participants or the solving models."
+  },
+  "dataset": {
+    "name": "LiberCoders/FeatureBench",
+    "split": "fast",
+    "version": "v1.1",
+    "revision": "76b4a4566e04f4bcc13c35125d4f301791efa736",
+    "sha256": "d775855a031b0fb5932ff7fdf4512ce733fbc6716528395bf15cbad22df5d2c3"
+  },
+  "environment": {
+    "evaluator_commit": "8d4e347ec57546685c5a87e8676bf575db022ea6",
+    "official_image": "libercoders/featurebench-specs_hatch-instance_02086956@sha256:70c443280ebe701fe0b6ca24d22c139f3b5c92817a5c1c16c2fc5762b67a4fb1",
+    "image_id": "sha256:70c443280ebe701fe0b6ca24d22c139f3b5c92817a5c1c16c2fc5762b67a4fb1",
+    "test_environment_versions": {
+      "python": "3.10.19",
+      "pytest": "9.0.1",
+      "hatch": "1.12.1.dev65",
+      "hatchling": "1.27.0"
+    },
+    "evaluator_python": "3.13.15",
+    "official_uv_lock_sha256": "4f01e56e2277d5b2ca248428be91ef1ead0e1bb900e74311fb9927429b7b86f1",
+    "prepared_by": "Unmodified pinned official RuntimeHandler.initialize_runtime(white_box=False) and clear_package_caches",
+    "preparation_cleanup_evidence": {
+      "official_runtime_initialized": true,
+      "white_box": false,
+      "official_package_caches_cleared": true,
+      "heldout_files_absent_mechanically_verified": true,
+      "pristine_root_my_repo_absent": true,
+      "mask_file_absent": true,
+      "fresh_git_commit_count": 1,
+      "baseline_clean": true,
+      "export_tree_matches_container": true,
+      "host_mounts": 0,
+      "docker_socket_mounted": false,
+      "network_mode": "bridge",
+      "hatch_import_origin": "/testbed/src/hatch/__init__.py",
+      "problem_statement_viewed_by_preparer": false,
+      "gold_solution_viewed": false,
+      "heldout_test_bodies_viewed": false,
+      "inference_calls": 0,
+      "hidden_evaluations": 0,
+      "official_source_files_verified_against_archive": 111,
+      "declaration_scope": "The no-reading declaration covers only this independent task preparation and metadata-summary work; it is not a blanket claim about all historical participants or the solving models."
+    },
+    "network_protocol_note": "Initial preparation was on ordinary bridge. Current independent inspection confirms the solver only on an internal network and a dual-network CONNECT proxy, with no host ports. Retained proxy configuration allows only api.deepseek.com:443. No per-trial historical network snapshots establish unchanged topology/loaded bytes across every run.",
+    "processes_at_seal": {
+      "cli_exit_already_recorded": true,
+      "only_container_keepalive_tail_observed": true
+    }
+  },
+  "submission": {
+    "run_id": "a37bbede-1e86-4cd6-9667-03bac09b6eb0",
+    "run_state_at_snapshot": "BLOCKED",
+    "sealed": true,
+    "patch_path": "/tmp/tripleteam-featurebench-eval-20260923/sealed-submission/submission.patch",
+    "patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prediction_format": "FeatureBench official prediction JSONL; one sealed system submission (n_attempt=1); include failed runtime outputs in later evaluation.",
+    "prediction_path": "/tmp/tripleteam-featurebench-eval-20260923/sealed-submission/predictions.jsonl",
+    "reason": "Final authoritative integration head equals masked input baseline; the empty patch is retained as failed output.",
+    "official_evaluation_status": "COMPLETE_OFFICIAL_UNRESOLVED_EMPTY_PATCH",
+    "sealed_at": "2026-09-23T07:51:17.928173+00:00",
+    "patch_bytes": 0,
+    "predictions_sha256": "f8e08a004c0958729642cb28064bebdf829c456451c1e41968748f92a9335c6e",
+    "submitted_commit": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+    "submitted_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+    "identity_path": "/tmp/tripleteam-featurebench-eval-20260923/sealed-submission/identity.json",
+    "baseline_commit": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+    "baseline_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+    "empty_patch_replay": "No-op; independently exported masked baseline HEAD/tree equals submitted identity.",
+    "failed_writer_candidates_submitted": false,
+    "sealed_identity_sha256": "a03069edacf54c03fcc116c070e74c02100c983affa32f30f0cdcf759f409a19"
+  },
+  "official_evaluation": {
+    "classification": "OFFICIAL_EVALUATOR_EMPTY_PATCH_RESULT",
+    "invocations": 1,
+    "cli_exit_code": 0,
+    "started_at": "2026-09-23T07:52:08.257693+00:00",
+    "finished_at": "2026-09-23T07:52:32.469264+00:00",
+    "resolved": false,
+    "strict_resolved_instances": 0,
+    "planned_instances": 1,
+    "featurebench_eval_completed": true,
+    "patch_exists": false,
+    "patch_successfully_applied": false,
+    "not_applied_patch_empty_instances": 1,
+    "infrastructure_error_instances": 0,
+    "official_pass_rate": 0.0,
+    "official_resolved_rate": 0.0,
+    "f2p": null,
+    "p2p": null,
+    "test_execution": "NOT_RUN_EMPTY_PATCH_EARLY_RETURN",
+    "test_count_note": "Official runtime returned on empty patch before executing tests; null is not a measured zero test pass count.",
+    "patch_identity_preserved": true,
+    "resubmissions_after_feedback": 0,
+    "command": [
+      "/tmp/tripleteam-featurebench-eval-20260922/FeatureBench-8d4e347ec57546685c5a87e8676bf575db022ea6/.venv/bin/python",
+      "-m",
+      "featurebench.cli",
+      "eval",
+      "-p",
+      "/tmp/tripleteam-featurebench-eval-20260923/sealed-submission/predictions.jsonl",
+      "--data-version",
+      "76b4a4566e04f4bcc13c35125d4f301791efa736",
+      "--split",
+      "fast",
+      "--include-failed",
+      "--n-concurrent",
+      "1",
+      "--task-id",
+      "pypa__hatch.ff4b4040.test_fmt.782c88a8.lv1"
+    ],
+    "cwd": "/tmp/tripleteam-featurebench-eval-20260922/FeatureBench-8d4e347ec57546685c5a87e8676bf575db022ea6"
+  },
+  "trials": [
+    {
+      "trial": 1,
+      "run_id": "a8ba5ebc-cc2b-4cc7-af73-dba144b552b9",
+      "state": "BLOCKED",
+      "terminal_reason": "Planning could not produce an executable graph: Actual usage or deadline reached the frozen run limit",
+      "created_at": "2026-09-23T05:33:53.826Z",
+      "terminal_at": "2026-09-23T05:36:43.274Z",
+      "input_commit": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+      "integration_head": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+      "integration_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+      "git_identity": {
+        "input_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "observed_integration_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "observed_integration_ref_head": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+        "tree_matches_database": true,
+        "ref_matches_database": true
+      },
+      "execution_policy": {
+        "decisionMode": "noninteractive",
+        "policy": "ADAPTIVE",
+        "maxParallelism": 2,
+        "maxExecutions": 48,
+        "costLimitUsd": 5,
+        "tokenLimit": 1500000,
+        "deadlineMs": 2100000,
+        "reservationUsd": 0.05,
+        "reservationTokens": 16384,
+        "maxFinalRepairs": 2,
+        "maxExplorationAttempts": 2,
+        "enableContracts": true,
+        "enableFailureAdaptation": true,
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "reasoning": "high"
+      },
+      "assurance_policy": {
+        "mode": "required",
+        "maxObligations": 8,
+        "maxProbes": 3,
+        "maxDesignAttempts": 3,
+        "repetitions": 2,
+        "probeTimeoutMs": 60000
+      },
+      "runtime_configuration_hash": "d1233c862a38de1eda5c3ba4a1fd0becf5a87a4883b5c3be62f731632590fff7",
+      "launch_metadata": {
+        "startedAt": 1790141632.8843887,
+        "human": false,
+        "model": "deepseek-flash",
+        "container": "tripleteam-featurebench-hatch-20260923",
+        "runtimeHashFile": "blind-runtime-hashes.json",
+        "runtimeHashes": {
+          "cli.js": "5c4275f90752a4081af41c3dcbbe14218f009d1cb01f5f56f8bb72d6163bf4dc",
+          "daemon.js": "69c290bcafe17f9cef56bf85b39bcca0cecdb0861d1fc46de3343d41d5740fce",
+          "control-extension.js": "92cbc50036ef6e70c913319a6f4974f1ca47074203eb1ef6e6165d1e41f822bf"
+        }
+      },
+      "exit_metadata": {
+        "exitCode": 0,
+        "finishedAt": 1790142270.885804
+      },
+      "counts": {
+        "tasks": 0,
+        "task_states": {},
+        "attempts": 1,
+        "attempt_states": {
+          "FAILED": 1
+        },
+        "attempt_functions": {
+          "PLAN": 1
+        },
+        "executions": 1,
+        "execution_states": {
+          "EXITED": 1
+        },
+        "control_action_kinds": {
+          "PLANNING_FAILURE": 1
+        },
+        "failure_diagnoses": 0
+      },
+      "wall_time": {
+        "logical_terminal_at": "2026-09-23T05:36:43.274Z",
+        "logical_run_ms": 169448,
+        "logical_run_elapsed_at_snapshot_ms": 169448,
+        "cli_process_ms": 638001,
+        "cli_elapsed_at_snapshot_ms": 638001,
+        "cli_exit_after_logical_terminal_ms": 467612
+      },
+      "usage": {
+        "records": 1,
+        "agent_records": 1,
+        "known_cost_usd": 0.057704519999999995,
+        "agent_cost_values_missing": 0,
+        "agent_records_incomplete": 1,
+        "agent_records_still_live": 0,
+        "agent_records_unreported_in_flight": 1,
+        "agent_token_values_missing": 0,
+        "executions_without_usage_records": 0,
+        "input_tokens_known": 38826,
+        "output_tokens_known": 30899,
+        "cache_read_tokens_known": 1496320,
+        "cache_write_tokens_known": 0,
+        "tool_calls_known": 87,
+        "total_tokens_known": 1566045,
+        "usage_complete": false,
+        "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+      },
+      "phase_usage": {
+        "PLAN": {
+          "records": 1,
+          "agent_records": 1,
+          "known_cost_usd": 0.057704519999999995,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 1,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 1,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 38826,
+          "output_tokens_known": 30899,
+          "cache_read_tokens_known": 1496320,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 87,
+          "total_tokens_known": 1566045,
+          "usage_complete": false,
+          "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+        }
+      },
+      "failures": [],
+      "check_counts": [],
+      "integration_counts": [],
+      "candidate_counts": []
+    },
+    {
+      "trial": 2,
+      "run_id": "688fe75d-827e-495e-9dcb-c9bf250eb4ee",
+      "state": "BLOCKED",
+      "terminal_reason": "Planning contract validation failed after correction: artifactPaths and checkNames were required.",
+      "created_at": "2026-09-23T05:43:29.490Z",
+      "terminal_at": "2026-09-23T05:43:59.440Z",
+      "input_commit": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+      "integration_head": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+      "integration_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+      "git_identity": {
+        "input_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "observed_integration_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "observed_integration_ref_head": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+        "tree_matches_database": true,
+        "ref_matches_database": true
+      },
+      "execution_policy": {
+        "decisionMode": "noninteractive",
+        "policy": "ADAPTIVE",
+        "maxParallelism": 2,
+        "maxExecutions": 48,
+        "costLimitUsd": 5,
+        "tokenLimit": 10000000,
+        "deadlineMs": 2100000,
+        "reservationUsd": 0.05,
+        "reservationTokens": 16384,
+        "maxFinalRepairs": 2,
+        "maxExplorationAttempts": 2,
+        "maxPlanningTokens": 250000,
+        "maxPlanningToolCalls": 24,
+        "maxPlanningMs": 120000,
+        "enableContracts": true,
+        "enableFailureAdaptation": true,
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "reasoning": "high"
+      },
+      "assurance_policy": {
+        "mode": "required",
+        "maxObligations": 8,
+        "maxProbes": 3,
+        "maxDesignAttempts": 3,
+        "repetitions": 2,
+        "probeTimeoutMs": 60000
+      },
+      "runtime_configuration_hash": "a3333e60f7231a723ac4055b249a3b440d3097291281590dfecaacf29890e0bd",
+      "launch_metadata": {
+        "startedAt": 1790142206.2043238,
+        "developmentRerun": true,
+        "priorTrial": "blind-start.json",
+        "priorOutcome": "BLOCKED before implementation; planning exhausted global token budget",
+        "human": false,
+        "hiddenFeedbackSeen": false,
+        "model": "deepseek-flash",
+        "runtimeHashes": {
+          "cli.js": "989e09022edf81db7603af071a4b3fd7c989ece08c7d936adaf1ce9cd42b9a16",
+          "daemon.js": "8e74767c16072675ceeb5bb0cf18f3fa5f94a066dd29f9004dffd302877467e6",
+          "control-extension.js": "92cbc50036ef6e70c913319a6f4974f1ca47074203eb1ef6e6165d1e41f822bf"
+        }
+      },
+      "exit_metadata": {
+        "exitCode": 0,
+        "finishedAt": 1790142239.4772384
+      },
+      "counts": {
+        "tasks": 0,
+        "task_states": {},
+        "attempts": 1,
+        "attempt_states": {
+          "FAILED": 1
+        },
+        "attempt_functions": {
+          "PLAN": 1
+        },
+        "executions": 1,
+        "execution_states": {
+          "EXITED": 1
+        },
+        "control_action_kinds": {
+          "PLANNING_FAILURE": 1
+        },
+        "failure_diagnoses": 0
+      },
+      "wall_time": {
+        "logical_terminal_at": "2026-09-23T05:43:59.440Z",
+        "logical_run_ms": 29950,
+        "logical_run_elapsed_at_snapshot_ms": 29950,
+        "cli_process_ms": 33273,
+        "cli_elapsed_at_snapshot_ms": 33273,
+        "cli_exit_after_logical_terminal_ms": 37
+      },
+      "usage": {
+        "records": 2,
+        "agent_records": 2,
+        "known_cost_usd": 0.014160096,
+        "agent_cost_values_missing": 0,
+        "agent_records_incomplete": 0,
+        "agent_records_still_live": 0,
+        "agent_records_unreported_in_flight": 0,
+        "agent_token_values_missing": 0,
+        "executions_without_usage_records": 0,
+        "input_tokens_known": 16596,
+        "output_tokens_known": 7205,
+        "cache_read_tokens_known": 89216,
+        "cache_write_tokens_known": 0,
+        "tool_calls_known": 20,
+        "total_tokens_known": 113017,
+        "usage_complete": true,
+        "cost_status": "COMPLETE_RUNTIME_USAGE"
+      },
+      "phase_usage": {
+        "PLAN": {
+          "records": 1,
+          "agent_records": 1,
+          "known_cost_usd": 0.01155954,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 16435,
+          "output_tokens_known": 5185,
+          "cache_read_tokens_known": 67840,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 20,
+          "total_tokens_known": 89460,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "PLAN_CORRECTION": {
+          "records": 1,
+          "agent_records": 1,
+          "known_cost_usd": 0.0026005560000000004,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 161,
+          "output_tokens_known": 2020,
+          "cache_read_tokens_known": 21376,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 23557,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        }
+      },
+      "failures": [],
+      "check_counts": [],
+      "integration_counts": [],
+      "candidate_counts": []
+    },
+    {
+      "trial": 3,
+      "run_id": "83d215d2-0d41-4d3c-b798-7f38ce1cb3b7",
+      "state": "BLOCKED",
+      "terminal_reason": "No runnable tasks remain; at least one task or dependency is blocked",
+      "created_at": "2026-09-23T05:47:14.103Z",
+      "terminal_at": "2026-09-23T06:02:52.082Z",
+      "input_commit": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+      "integration_head": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+      "integration_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+      "git_identity": {
+        "input_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "observed_integration_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "observed_integration_ref_head": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+        "tree_matches_database": true,
+        "ref_matches_database": true
+      },
+      "execution_policy": {
+        "decisionMode": "noninteractive",
+        "policy": "ADAPTIVE",
+        "maxParallelism": 2,
+        "maxExecutions": 48,
+        "costLimitUsd": 5,
+        "tokenLimit": 10000000,
+        "deadlineMs": 2100000,
+        "reservationUsd": 0.05,
+        "reservationTokens": 16384,
+        "maxFinalRepairs": 2,
+        "maxExplorationAttempts": 2,
+        "maxPlanningTokens": 250000,
+        "maxPlanningToolCalls": 24,
+        "maxPlanningMs": 120000,
+        "enableContracts": true,
+        "enableFailureAdaptation": true,
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "reasoning": "high"
+      },
+      "assurance_policy": {
+        "mode": "required",
+        "maxObligations": 8,
+        "maxProbes": 3,
+        "maxDesignAttempts": 3,
+        "repetitions": 2,
+        "probeTimeoutMs": 60000
+      },
+      "runtime_configuration_hash": "a3333e60f7231a723ac4055b249a3b440d3097291281590dfecaacf29890e0bd",
+      "launch_metadata": {
+        "startedAt": 1790142428.0532725,
+        "developmentRerun": true,
+        "priorTrial": "blind-v2-start.json",
+        "priorOutcome": "BLOCKED before implementation; generated contract remained invalid after correction; search tool binaries installed before this run",
+        "human": false,
+        "hiddenFeedbackSeen": false,
+        "model": "deepseek-flash",
+        "runtimeHashes": {
+          "cli.js": "09fba1781b5f677d844661e881e3d8ad96f953029606f23262e2089b8c1a2f41",
+          "daemon.js": "877ff3469388f109540fb4b515501fc22b9113d429a975767f45a676c46c0cc6",
+          "control-extension.js": "92cbc50036ef6e70c913319a6f4974f1ca47074203eb1ef6e6165d1e41f822bf"
+        }
+      },
+      "exit_metadata": {
+        "exitCode": 0,
+        "finishedAt": 1790143372.1299498
+      },
+      "counts": {
+        "tasks": 1,
+        "task_states": {
+          "BLOCKED": 1
+        },
+        "attempts": 7,
+        "attempt_states": {
+          "FAILED": 5,
+          "SUBMITTED": 2
+        },
+        "attempt_functions": {
+          "PLAN": 1,
+          "IMPLEMENT": 3,
+          "REVIEW": 3
+        },
+        "executions": 4,
+        "execution_states": {
+          "EXITED": 4
+        },
+        "control_action_kinds": {
+          "PLANNING_FALLBACK": 1,
+          "ASSURANCE_DESIGN_ATTEMPT": 3,
+          "COMPUTE_ALLOCATION": 3,
+          "ASSURANCE_DESIGN_REJECTED": 3
+        },
+        "failure_diagnoses": 3
+      },
+      "wall_time": {
+        "logical_terminal_at": "2026-09-23T06:02:52.082Z",
+        "logical_run_ms": 937979,
+        "logical_run_elapsed_at_snapshot_ms": 937979,
+        "cli_process_ms": 944077,
+        "cli_elapsed_at_snapshot_ms": 944077,
+        "cli_exit_after_logical_terminal_ms": 48
+      },
+      "usage": {
+        "records": 8,
+        "agent_records": 5,
+        "known_cost_usd": 0.144326676,
+        "agent_cost_values_missing": 0,
+        "agent_records_incomplete": 2,
+        "agent_records_still_live": 0,
+        "agent_records_unreported_in_flight": 2,
+        "agent_token_values_missing": 0,
+        "executions_without_usage_records": 0,
+        "input_tokens_known": 144571,
+        "output_tokens_known": 71293,
+        "cache_read_tokens_known": 2567296,
+        "cache_write_tokens_known": 0,
+        "tool_calls_known": 154,
+        "total_tokens_known": 2783160,
+        "usage_complete": false,
+        "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+      },
+      "phase_usage": {
+        "PLAN": {
+          "records": 1,
+          "agent_records": 1,
+          "known_cost_usd": 0.0220524,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 28224,
+          "output_tokens_known": 10313,
+          "cache_read_tokens_known": 201600,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 20,
+          "total_tokens_known": 240137,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "PLAN_CORRECTION": {
+          "records": 1,
+          "agent_records": 1,
+          "known_cost_usd": 0.005499827999999998,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 1,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 1,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 211,
+          "output_tokens_known": 4341,
+          "cache_read_tokens_known": 37888,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 42440,
+          "usage_complete": false,
+          "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+        },
+        "SINGLE": {
+          "records": 3,
+          "agent_records": 0,
+          "known_cost_usd": 0,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 0,
+          "output_tokens_known": 0,
+          "cache_read_tokens_known": 0,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 0,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "SPECIFICATION_DESIGN": {
+          "records": 3,
+          "agent_records": 3,
+          "known_cost_usd": 0.11677444799999999,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 1,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 1,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 116136,
+          "output_tokens_known": 56639,
+          "cache_read_tokens_known": 2327808,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 134,
+          "total_tokens_known": 2500583,
+          "usage_complete": false,
+          "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+        }
+      },
+      "failures": [
+        {
+          "phase": "IMPLEMENT_RUNTIME",
+          "classification": "INFRASTRUCTURE",
+          "disposition": "INFRA_RETRY",
+          "occurrence": 1,
+          "fingerprint": "35ccf5df73f006fa19a40f6e502e5947cde94318922de7c0494b525fe219cfa4",
+          "created_at": "2026-09-23T06:02:52.069Z",
+          "reason": "Independent verification design exhausted its bounded attempts; Untraceable specification quotation for behavior_3",
+          "classification_note": "Recorded runtime policy classification; not an independently established root cause."
+        },
+        {
+          "phase": "IMPLEMENT_RUNTIME",
+          "classification": "INFRASTRUCTURE",
+          "disposition": "INFRA_RETRY",
+          "occurrence": 1,
+          "fingerprint": "6e3f0f583694455da305f8b965be3e8180921429da04a7d5d4443a1ae58c7c41",
+          "created_at": "2026-09-23T06:02:52.076Z",
+          "reason": "Independent verification design exhausted its bounded attempts; ",
+          "classification_note": "Recorded runtime policy classification; not an independently established root cause."
+        },
+        {
+          "phase": "IMPLEMENT_RUNTIME",
+          "classification": "INFRASTRUCTURE",
+          "disposition": "BLOCK",
+          "occurrence": 2,
+          "fingerprint": "6e3f0f583694455da305f8b965be3e8180921429da04a7d5d4443a1ae58c7c41",
+          "created_at": "2026-09-23T06:02:52.081Z",
+          "reason": "Independent verification design exhausted its bounded attempts; ",
+          "classification_note": "Recorded runtime policy classification; not an independently established root cause."
+        }
+      ],
+      "check_counts": [],
+      "integration_counts": [],
+      "candidate_counts": []
+    },
+    {
+      "trial": 4,
+      "run_id": "3c983940-58cd-48e4-b317-6b68e02dde2b",
+      "state": "BLOCKED",
+      "terminal_reason": "No runnable tasks remain; at least one task or dependency is blocked",
+      "created_at": "2026-09-23T07:07:55.223Z",
+      "terminal_at": "2026-09-23T07:11:37.567Z",
+      "input_commit": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+      "integration_head": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+      "integration_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+      "git_identity": {
+        "input_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "observed_integration_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "observed_integration_ref_head": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+        "tree_matches_database": true,
+        "ref_matches_database": true
+      },
+      "execution_policy": {
+        "decisionMode": "noninteractive",
+        "policy": "ADAPTIVE",
+        "maxParallelism": 2,
+        "maxExecutions": 48,
+        "costLimitUsd": 5,
+        "tokenLimit": 10000000,
+        "deadlineMs": 2100000,
+        "reservationUsd": 0.05,
+        "reservationTokens": 16384,
+        "maxFinalRepairs": 2,
+        "maxExplorationAttempts": 2,
+        "maxPlanningTokens": 250000,
+        "maxPlanningToolCalls": 24,
+        "maxPlanningMs": 120000,
+        "enableContracts": true,
+        "enableFailureAdaptation": true,
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "reasoning": "high"
+      },
+      "assurance_policy": {
+        "mode": "required",
+        "maxObligations": 8,
+        "maxProbes": 3,
+        "maxDesignAttempts": 3,
+        "maxDesignTokens": 300000,
+        "maxDesignToolCalls": 40,
+        "maxDesignMs": 180000,
+        "repetitions": 2,
+        "probeTimeoutMs": 60000
+      },
+      "runtime_configuration_hash": "7f55fb460473511f104a40975510798252714079c476e468495c0ff6ff924d23",
+      "launch_metadata": {
+        "startedAt": 1790147273.3595972,
+        "developmentRerun": true,
+        "priorTrial": "blind-v3-start.json",
+        "priorOutcome": "BLOCKED before implementation; two untraceable quotations and one root search timeout. This run adds workspace search guard, persisted local assurance correction and per-design allocation. No hidden feedback seen.",
+        "human": false,
+        "hiddenFeedbackSeen": false,
+        "model": "deepseek-flash",
+        "runtimeHashes": {
+          "cli.js": "b645846ac45d99844df159a3cfcfada0f9ef1c0cbaba789745b12e53c94dfa55",
+          "daemon.js": "43a462f6e4360897e419e6639dcd044dc0f0e6dd91af3b7322316acde974b1cd",
+          "control-extension.js": "cca05958616581357435206a65ad5f1e55501a9abf331c6e2cb5db98e9ed9971"
+        }
+      },
+      "exit_metadata": {
+        "exitCode": 0,
+        "finishedAt": 1790147928.922569
+      },
+      "counts": {
+        "tasks": 1,
+        "task_states": {
+          "BLOCKED": 1
+        },
+        "attempts": 5,
+        "attempt_states": {
+          "FAILED": 5
+        },
+        "attempt_functions": {
+          "PLAN": 1,
+          "IMPLEMENT": 1,
+          "REVIEW": 3
+        },
+        "executions": 4,
+        "execution_states": {
+          "EXITED": 4
+        },
+        "control_action_kinds": {
+          "PLANNING_FALLBACK": 1,
+          "COMPUTE_ALLOCATION": 1,
+          "ASSURANCE_DESIGN_ATTEMPT": 3,
+          "ASSURANCE_DESIGN_REJECTED": 3
+        },
+        "failure_diagnoses": 1
+      },
+      "wall_time": {
+        "logical_terminal_at": "2026-09-23T07:11:37.567Z",
+        "logical_run_ms": 222344,
+        "logical_run_elapsed_at_snapshot_ms": 222344,
+        "cli_process_ms": 655563,
+        "cli_elapsed_at_snapshot_ms": 655563,
+        "cli_exit_after_logical_terminal_ms": 431356
+      },
+      "usage": {
+        "records": 6,
+        "agent_records": 5,
+        "known_cost_usd": 0.09022287600000001,
+        "agent_cost_values_missing": 0,
+        "agent_records_incomplete": 4,
+        "agent_records_still_live": 0,
+        "agent_records_unreported_in_flight": 4,
+        "agent_token_values_missing": 0,
+        "executions_without_usage_records": 0,
+        "input_tokens_known": 110249,
+        "output_tokens_known": 42419,
+        "cache_read_tokens_known": 1040896,
+        "cache_write_tokens_known": 0,
+        "tool_calls_known": 88,
+        "total_tokens_known": 1193564,
+        "usage_complete": false,
+        "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+      },
+      "phase_usage": {
+        "PLAN": {
+          "records": 1,
+          "agent_records": 1,
+          "known_cost_usd": 0.020508432,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 21924,
+          "output_tokens_known": 10698,
+          "cache_read_tokens_known": 182272,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 21,
+          "total_tokens_known": 214894,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "PLAN_CORRECTION": {
+          "records": 1,
+          "agent_records": 1,
+          "known_cost_usd": 0.006171731999999999,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 1,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 1,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 147,
+          "output_tokens_known": 4947,
+          "cache_read_tokens_known": 31872,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 36966,
+          "usage_complete": false,
+          "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+        },
+        "SINGLE": {
+          "records": 1,
+          "agent_records": 0,
+          "known_cost_usd": 0,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 0,
+          "output_tokens_known": 0,
+          "cache_read_tokens_known": 0,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 0,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "SPECIFICATION_DESIGN": {
+          "records": 3,
+          "agent_records": 3,
+          "known_cost_usd": 0.063542712,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 3,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 3,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 88178,
+          "output_tokens_known": 26774,
+          "cache_read_tokens_known": 826752,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 67,
+          "total_tokens_known": 941704,
+          "usage_complete": false,
+          "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+        }
+      },
+      "failures": [
+        {
+          "phase": "SPECIFICATION_DESIGN",
+          "classification": "VERIFICATION",
+          "disposition": "BLOCK",
+          "occurrence": 1,
+          "fingerprint": "00200030458195843a9c57bc66287567cdcfcbca6abff76d051b1cd8c513b239",
+          "created_at": "2026-09-23T07:11:37.566Z",
+          "reason": "Independent verification design exhausted its bounded attempts; Assurance specification design exhausted its compute allocation",
+          "classification_note": "Recorded runtime policy classification; not an independently established root cause."
+        }
+      ],
+      "check_counts": [],
+      "integration_counts": [],
+      "candidate_counts": []
+    },
+    {
+      "trial": 5,
+      "run_id": "a37bbede-1e86-4cd6-9667-03bac09b6eb0",
+      "state": "BLOCKED",
+      "terminal_reason": "Run deadline exhausted",
+      "created_at": "2026-09-23T07:13:50.686Z",
+      "terminal_at": "2026-09-23T07:48:50.731Z",
+      "input_commit": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+      "integration_head": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+      "integration_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+      "git_identity": {
+        "input_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "observed_integration_tree": "a7e1f5cf47add2c515387cadf9c1a2cfb4436245",
+        "observed_integration_ref_head": "71955da1d6352ea7358c98fba73a6e891a42aa0c",
+        "tree_matches_database": true,
+        "ref_matches_database": true
+      },
+      "execution_policy": {
+        "decisionMode": "noninteractive",
+        "policy": "ADAPTIVE",
+        "maxParallelism": 2,
+        "maxExecutions": 48,
+        "costLimitUsd": 5,
+        "tokenLimit": 10000000,
+        "deadlineMs": 2100000,
+        "reservationUsd": 0.05,
+        "reservationTokens": 16384,
+        "maxFinalRepairs": 2,
+        "maxExplorationAttempts": 2,
+        "maxPlanningTokens": 250000,
+        "maxPlanningToolCalls": 24,
+        "maxPlanningMs": 120000,
+        "enableContracts": true,
+        "enableFailureAdaptation": true,
+        "model": "deepseek-flash",
+        "provider": "deepseek",
+        "reasoning": "high"
+      },
+      "assurance_policy": {
+        "mode": "required",
+        "maxObligations": 8,
+        "maxProbes": 3,
+        "maxDesignAttempts": 3,
+        "maxDesignTokens": 1200000,
+        "maxDesignToolCalls": 60,
+        "maxDesignMs": 240000,
+        "repetitions": 2,
+        "probeTimeoutMs": 60000
+      },
+      "runtime_configuration_hash": "39cef1f963d280ef54649ee6f75cea95882f0b4b095a05c18cd1db44c021b0de",
+      "launch_metadata": {
+        "startedAt": 1790147629.8670025,
+        "developmentRerun": true,
+        "priorTrial": "blind-v4-start.json",
+        "priorOutcome": "BLOCKED before implementation: each of three design calls exhausted 300k total-token phase allowance after roughly 20 tool calls. Same runtime; this development trial raises assurance per-call allowance to 1.2M tokens, 60 tools, 240s. Total run allowance remains 10M tokens and USD5. No hidden feedback seen.",
+        "human": false,
+        "hiddenFeedbackSeen": false,
+        "model": "deepseek-flash",
+        "runtimeHashes": {
+          "cli.js": "b645846ac45d99844df159a3cfcfada0f9ef1c0cbaba789745b12e53c94dfa55",
+          "daemon.js": "43a462f6e4360897e419e6639dcd044dc0f0e6dd91af3b7322316acde974b1cd",
+          "control-extension.js": "cca05958616581357435206a65ad5f1e55501a9abf331c6e2cb5db98e9ed9971"
+        }
+      },
+      "exit_metadata": {
+        "exitCode": 0,
+        "finishedAt": 1790149730.8279245
+      },
+      "counts": {
+        "tasks": 5,
+        "task_states": {
+          "BLOCKED": 3,
+          "PROPOSED": 2
+        },
+        "attempts": 11,
+        "attempt_states": {
+          "SUBMITTED": 9,
+          "FAILED": 2
+        },
+        "attempt_functions": {
+          "PLAN": 1,
+          "IMPLEMENT": 3,
+          "REVIEW": 7
+        },
+        "executions": 11,
+        "execution_states": {
+          "EXITED": 11
+        },
+        "control_action_kinds": {
+          "COMPUTE_ESTIMATE": 3,
+          "ASSURANCE_DESIGN_ATTEMPT": 3,
+          "COMPUTE_ALLOCATION": 1,
+          "ASSURANCE_DESIGN_PROPOSED": 3,
+          "ASSURANCE_DESIGN_REJECTED": 2,
+          "ASSURANCE_PLAN_FROZEN": 1,
+          "ASSURANCE_OUTCOME": 3
+        },
+        "failure_diagnoses": 3
+      },
+      "wall_time": {
+        "logical_terminal_at": "2026-09-23T07:48:50.731Z",
+        "logical_run_ms": 2100045,
+        "logical_run_elapsed_at_snapshot_ms": 2100045,
+        "cli_process_ms": 2100961,
+        "cli_elapsed_at_snapshot_ms": 2100961,
+        "cli_exit_after_logical_terminal_ms": 97
+      },
+      "usage": {
+        "records": 30,
+        "agent_records": 12,
+        "known_cost_usd": 0.4220664839999999,
+        "agent_cost_values_missing": 0,
+        "agent_records_incomplete": 2,
+        "agent_records_still_live": 0,
+        "agent_records_unreported_in_flight": 2,
+        "agent_token_values_missing": 0,
+        "executions_without_usage_records": 0,
+        "input_tokens_known": 331175,
+        "output_tokens_known": 230280,
+        "cache_read_tokens_known": 7729664,
+        "cache_write_tokens_known": 0,
+        "tool_calls_known": 336,
+        "total_tokens_known": 8291119,
+        "usage_complete": false,
+        "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+      },
+      "phase_usage": {
+        "CANDIDATE:patch-shape": {
+          "records": 1,
+          "agent_records": 0,
+          "known_cost_usd": 0,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 0,
+          "output_tokens_known": 0,
+          "cache_read_tokens_known": 0,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 0,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "IMPLEMENT": {
+          "records": 3,
+          "agent_records": 3,
+          "known_cost_usd": 0.21859221599999995,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 2,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 2,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 174922,
+          "output_tokens_known": 107990,
+          "cache_read_tokens_known": 6087936,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 179,
+          "total_tokens_known": 6370848,
+          "usage_complete": false,
+          "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+        },
+        "INDEPENDENT_PROBE": {
+          "records": 6,
+          "agent_records": 0,
+          "known_cost_usd": 0,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 0,
+          "output_tokens_known": 0,
+          "cache_read_tokens_known": 0,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 0,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "INTEGRATION:public-pytest": {
+          "records": 1,
+          "agent_records": 0,
+          "known_cost_usd": 0,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 0,
+          "output_tokens_known": 0,
+          "cache_read_tokens_known": 0,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 0,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "PLAN": {
+          "records": 1,
+          "agent_records": 1,
+          "known_cost_usd": 0.015641303999999998,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 16862,
+          "output_tokens_known": 8417,
+          "cache_read_tokens_known": 80384,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 20,
+          "total_tokens_known": 105663,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "PLAN_CORRECTION": {
+          "records": 1,
+          "agent_records": 1,
+          "known_cost_usd": 0.0034830960000000015,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 150,
+          "output_tokens_known": 2739,
+          "cache_read_tokens_known": 25216,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 28105,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "PROBE_CONTROL": {
+          "records": 7,
+          "agent_records": 0,
+          "known_cost_usd": 0,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 0,
+          "output_tokens_known": 0,
+          "cache_read_tokens_known": 0,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 0,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "PROBE_CRITIQUE": {
+          "records": 3,
+          "agent_records": 3,
+          "known_cost_usd": 0.07534249199999998,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 63613,
+          "output_tokens_known": 43382,
+          "cache_read_tokens_known": 700032,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 54,
+          "total_tokens_known": 807027,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "REVIEW": {
+          "records": 1,
+          "agent_records": 1,
+          "known_cost_usd": 0.028325975999999996,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 21930,
+          "output_tokens_known": 16454,
+          "cache_read_tokens_known": 333696,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 34,
+          "total_tokens_known": 372080,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "SERIALIZE": {
+          "records": 3,
+          "agent_records": 0,
+          "known_cost_usd": 0,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 0,
+          "output_tokens_known": 0,
+          "cache_read_tokens_known": 0,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 0,
+          "total_tokens_known": 0,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        },
+        "SPECIFICATION_DESIGN": {
+          "records": 3,
+          "agent_records": 3,
+          "known_cost_usd": 0.08068139999999999,
+          "agent_cost_values_missing": 0,
+          "agent_records_incomplete": 0,
+          "agent_records_still_live": 0,
+          "agent_records_unreported_in_flight": 0,
+          "agent_token_values_missing": 0,
+          "executions_without_usage_records": 0,
+          "input_tokens_known": 53698,
+          "output_tokens_known": 51298,
+          "cache_read_tokens_known": 502400,
+          "cache_write_tokens_known": 0,
+          "tool_calls_known": 49,
+          "total_tokens_known": 607396,
+          "usage_complete": true,
+          "cost_status": "COMPLETE_RUNTIME_USAGE"
+        }
+      },
+      "failures": [
+        {
+          "phase": "IMPLEMENT_RUNTIME",
+          "classification": "INFRASTRUCTURE",
+          "disposition": "INFRA_RETRY",
+          "occurrence": 1,
+          "fingerprint": "b8fcbeb2b2ab0c6ca07118f3a3bee6795303e58b12a5f25bd1e162a647d44c67",
+          "created_at": "2026-09-23T07:33:52.094Z",
+          "reason": "Timeout collecting events. Stderr: Warning: No project session found with id 'implement-878d1f2b-9bda-42e6-b622-c77155240ab1'; creating a new session with that id.\n",
+          "classification_note": "Recorded runtime policy classification; not an independently established root cause."
+        },
+        {
+          "phase": "INTEGRATION_VERIFY",
+          "classification": "VERIFICATION",
+          "disposition": "RETRY",
+          "occurrence": 1,
+          "fingerprint": "7967d4a61c9e5d79f26f8baac6374e1f7bf87b3e1bd15eff8d9959c450ddc817",
+          "created_at": "2026-09-23T07:43:57.900Z",
+          "reason": {
+            "checkKind": "public-pytest",
+            "checkVersion": "7066fa6811bbdd25e00c36ec8b92a2470d612e1c28b3d68a6313c2e0bbc8b8ad",
+            "exitCode": 2,
+            "timedOut": false,
+            "observation": "Public pytest import collection failed: hatch._version was unavailable and ProjectConfig could not be imported.",
+            "subject_commit": "232b66ef74eed4473896c2ef7164a7dc3aa76c43",
+            "subject_tree": "9ea62aed6c6058a7a6b66dff542e91cb7eec2227",
+            "root_cause_status": "UNDETERMINED; no attribution to the model alone"
+          },
+          "classification_note": "Recorded runtime policy classification; not an independently established root cause."
+        },
+        {
+          "phase": "IMPLEMENT_RUNTIME",
+          "classification": "INFRASTRUCTURE",
+          "disposition": "BLOCK",
+          "occurrence": 1,
+          "fingerprint": "96a1ae98f29dd129d8756d102dce61b352dcd1e79ce0ba67b4b9be55377297bd",
+          "created_at": "2026-09-23T07:48:50.710Z",
+          "reason": "Actual usage or deadline reached the frozen run limit",
+          "classification_note": "Recorded runtime policy classification; not an independently established root cause."
+        }
+      ],
+      "check_counts": [
+        {
+          "state": "ERROR",
+          "evidence_class": "BUILD",
+          "count": 2
+        },
+        {
+          "state": "FAILED",
+          "evidence_class": "BUILD",
+          "count": 1
+        },
+        {
+          "state": "PASSED",
+          "evidence_class": "BUILD",
+          "count": 11
+        },
+        {
+          "state": "PASSED",
+          "evidence_class": "STRUCTURAL",
+          "count": 1
+        }
+      ],
+      "integration_counts": [
+        {
+          "state": "FAILED",
+          "count": 1
+        }
+      ],
+      "candidate_counts": [
+        {
+          "state": "REJECTED",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "configuration_and_runtime_changes": [
+    {
+      "trial": 2,
+      "frozen_policy_changes": [
+        {
+          "field": "execution_policy.maxPlanningMs",
+          "before": null,
+          "after": 120000
+        },
+        {
+          "field": "execution_policy.maxPlanningTokens",
+          "before": null,
+          "after": 250000
+        },
+        {
+          "field": "execution_policy.maxPlanningToolCalls",
+          "before": null,
+          "after": 24
+        },
+        {
+          "field": "execution_policy.tokenLimit",
+          "before": 1500000,
+          "after": 10000000
+        }
+      ],
+      "recorded_development_reason": "BLOCKED before implementation; planning exhausted global token budget",
+      "runtime_hashes": {
+        "cli.js": "989e09022edf81db7603af071a4b3fd7c989ece08c7d936adaf1ce9cd42b9a16",
+        "daemon.js": "8e74767c16072675ceeb5bb0cf18f3fa5f94a066dd29f9004dffd302877467e6",
+        "control-extension.js": "92cbc50036ef6e70c913319a6f4974f1ca47074203eb1ef6e6165d1e41f822bf"
+      }
+    },
+    {
+      "trial": 3,
+      "frozen_policy_changes": [],
+      "recorded_development_reason": "BLOCKED before implementation; generated contract remained invalid after correction; search tool binaries installed before this run",
+      "runtime_hashes": {
+        "cli.js": "09fba1781b5f677d844661e881e3d8ad96f953029606f23262e2089b8c1a2f41",
+        "daemon.js": "877ff3469388f109540fb4b515501fc22b9113d429a975767f45a676c46c0cc6",
+        "control-extension.js": "92cbc50036ef6e70c913319a6f4974f1ca47074203eb1ef6e6165d1e41f822bf"
+      }
+    },
+    {
+      "trial": 4,
+      "frozen_policy_changes": [
+        {
+          "field": "assurance_policy.maxDesignMs",
+          "before": null,
+          "after": 180000
+        },
+        {
+          "field": "assurance_policy.maxDesignTokens",
+          "before": null,
+          "after": 300000
+        },
+        {
+          "field": "assurance_policy.maxDesignToolCalls",
+          "before": null,
+          "after": 40
+        }
+      ],
+      "recorded_development_reason": "BLOCKED before implementation; two untraceable quotations and one root search timeout. This run adds workspace search guard, persisted local assurance correction and per-design allocation. No hidden feedback seen.",
+      "runtime_hashes": {
+        "cli.js": "b645846ac45d99844df159a3cfcfada0f9ef1c0cbaba789745b12e53c94dfa55",
+        "daemon.js": "43a462f6e4360897e419e6639dcd044dc0f0e6dd91af3b7322316acde974b1cd",
+        "control-extension.js": "cca05958616581357435206a65ad5f1e55501a9abf331c6e2cb5db98e9ed9971"
+      }
+    },
+    {
+      "trial": 5,
+      "frozen_policy_changes": [
+        {
+          "field": "assurance_policy.maxDesignMs",
+          "before": 180000,
+          "after": 240000
+        },
+        {
+          "field": "assurance_policy.maxDesignTokens",
+          "before": 300000,
+          "after": 1200000
+        },
+        {
+          "field": "assurance_policy.maxDesignToolCalls",
+          "before": 40,
+          "after": 60
+        }
+      ],
+      "recorded_development_reason": "BLOCKED before implementation: each of three design calls exhausted 300k total-token phase allowance after roughly 20 tool calls. Same runtime; this development trial raises assurance per-call allowance to 1.2M tokens, 60 tools, 240s. Total run allowance remains 10M tokens and USD5. No hidden feedback seen.",
+      "runtime_hashes": {
+        "cli.js": "b645846ac45d99844df159a3cfcfada0f9ef1c0cbaba789745b12e53c94dfa55",
+        "daemon.js": "43a462f6e4360897e419e6639dcd044dc0f0e6dd91af3b7322316acde974b1cd",
+        "control-extension.js": "cca05958616581357435206a65ad5f1e55501a9abf331c6e2cb5db98e9ed9971"
+      }
+    }
+  ],
+  "source_configuration_snapshots": [
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-project-v2.json",
+      "sha256": "00acc10ba8e4d96860d9c6d3b7bc5c1ce929ba580fb645e59722c2b24541d541",
+      "execution": {
+        "policy": "ADAPTIVE",
+        "decisionMode": "noninteractive",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning": "high",
+        "maxExecutions": 48,
+        "maxParallelism": 2,
+        "costLimitUsd": 5,
+        "tokenLimit": 10000000,
+        "deadlineMs": 2100000,
+        "reservationUsd": 0.05,
+        "reservationTokens": 16384,
+        "maxFinalRepairs": 2,
+        "maxPlanningTokens": 250000,
+        "maxPlanningToolCalls": 24,
+        "maxPlanningMs": 120000
+      },
+      "assurance": {
+        "mode": "required",
+        "maxProbes": 3,
+        "maxDesignAttempts": 3,
+        "repetitions": 2,
+        "probeTimeoutMs": 60000
+      },
+      "worker_timeout_ms": 600000,
+      "candidate_check_count": 1,
+      "integration_check_count": 1,
+      "run_check_count": 1,
+      "review_required_for": [
+        "LOW",
+        "NORMAL",
+        "HIGH"
+      ]
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-project-v5.json",
+      "sha256": "ce2bc5f35d744c835c4db3fafd02896fca4dee6966eec03f1ade962280e7cbed",
+      "execution": {
+        "policy": "ADAPTIVE",
+        "decisionMode": "noninteractive",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning": "high",
+        "maxExecutions": 48,
+        "maxParallelism": 2,
+        "costLimitUsd": 5,
+        "tokenLimit": 10000000,
+        "deadlineMs": 2100000,
+        "reservationUsd": 0.05,
+        "reservationTokens": 16384,
+        "maxFinalRepairs": 2,
+        "maxPlanningTokens": 250000,
+        "maxPlanningToolCalls": 24,
+        "maxPlanningMs": 120000
+      },
+      "assurance": {
+        "mode": "required",
+        "maxProbes": 3,
+        "maxDesignAttempts": 3,
+        "repetitions": 2,
+        "probeTimeoutMs": 60000,
+        "maxDesignTokens": 1200000,
+        "maxDesignToolCalls": 60,
+        "maxDesignMs": 240000
+      },
+      "worker_timeout_ms": 600000,
+      "candidate_check_count": 1,
+      "integration_check_count": 1,
+      "run_check_count": 1,
+      "review_required_for": [
+        "LOW",
+        "NORMAL",
+        "HIGH"
+      ]
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-project.json",
+      "sha256": "2789a7bf91ccfb5c62ea05396a2facd88febc7225c6dc7a61f4a12c3835f9975",
+      "execution": {
+        "policy": "ADAPTIVE",
+        "decisionMode": "noninteractive",
+        "provider": "deepseek",
+        "model": "deepseek-flash",
+        "reasoning": "high",
+        "maxExecutions": 48,
+        "maxParallelism": 2,
+        "costLimitUsd": 5,
+        "tokenLimit": 1500000,
+        "deadlineMs": 2100000,
+        "reservationUsd": 0.05,
+        "reservationTokens": 16384,
+        "maxFinalRepairs": 2
+      },
+      "assurance": {
+        "mode": "required",
+        "maxProbes": 3,
+        "maxDesignAttempts": 3,
+        "repetitions": 2,
+        "probeTimeoutMs": 60000
+      },
+      "worker_timeout_ms": 600000,
+      "candidate_check_count": 1,
+      "integration_check_count": 1,
+      "run_check_count": 1,
+      "review_required_for": [
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ]
+    }
+  ],
+  "tool_environment_changes": [
+    {
+      "before_trial": 3,
+      "description": "Installed fixed search binaries absent from the official Python image: rg 15.2.0 and fd 10.4.2.",
+      "source": "/tmp/tripleteam-deepseek-20260923/blind-v2-environment-repair.json",
+      "receipt": {
+        "recordedAt": 1790142342.802152,
+        "action": "Installed fixed search binaries absent in official Python image",
+        "binaries": {
+          "rg": "15.2.0",
+          "fd": "10.4.2"
+        },
+        "modelSteering": false,
+        "codeEdits": false,
+        "reason": "Pi grep/find require binaries; model-only egress prevents automatic dependency download"
+      }
+    }
+  ],
+  "all_development_usage": {
+    "records": 47,
+    "agent_records": 25,
+    "known_cost_usd": 0.7284806519999999,
+    "agent_cost_values_missing": 0,
+    "agent_records_incomplete": 9,
+    "agent_records_still_live": 0,
+    "agent_records_unreported_in_flight": 9,
+    "agent_token_values_missing": 0,
+    "executions_without_usage_records": 0,
+    "input_tokens_known": 641417,
+    "output_tokens_known": 382096,
+    "cache_read_tokens_known": 12923392,
+    "cache_write_tokens_known": 0,
+    "tool_calls_known": 685,
+    "total_tokens_known": 13946905,
+    "usage_complete": false,
+    "cost_status": "KNOWN_LOWER_BOUND_WITH_UNKNOWN_USAGE"
+  },
+  "trial_state_counts": {
+    "BLOCKED": 5
+  },
+  "observations": [
+    "All five development trials ended BLOCKED; final authoritative integration remained at the input baseline.",
+    "Trials 3 and 4 created IMPLEMENT attempts but recorded no IMPLEMENT model-usage phase; attempt counts are not writer inference counts.",
+    "Trial 5 recorded planning, specification design, independent critique, implementation, review, a public integration check failure and bounded repair before the deadline.",
+    "The public integration check exited 2 during import collection; this is not a measured behavioral-test assertion pass rate.",
+    "Recorded failure classifications are control-policy observations; they do not prove the root cause was the model or infrastructure.",
+    "The RPC cancellation transport cleanup was fixed outside the frozen v5 build and was not hot-applied to this run.",
+    "The final JSONL uses n_attempt=1 for one sealed submission; five same-task development reruns mean this is not pass@1 or a fair product benchmark."
+  ],
+  "raw_artifacts": [
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-development-summary.json",
+      "sha256": "79579bd9800ef379d8dff0d6702ee5a3efdaa203b5c6946aad7b157639e0fd05",
+      "bytes": 149343
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/sealed-submission/identity.json",
+      "sha256": "a03069edacf54c03fcc116c070e74c02100c983affa32f30f0cdcf759f409a19",
+      "bytes": 2953
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/sealed-submission/submission.patch",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/sealed-submission/predictions.jsonl",
+      "sha256": "f8e08a004c0958729642cb28064bebdf829c456451c1e41968748f92a9335c6e",
+      "bytes": 630
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/official-evaluation-invocation.json",
+      "sha256": "06bb0045c44d6d716dc1f15afa196588f6954be5ba02298b9bf253913c8894a1",
+      "bytes": 880
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/official-evaluation-completion.json",
+      "sha256": "2d062512915b750dcb97e4dd42584cdae0dc10e56c8e041b8fb9d6254ba14866",
+      "bytes": 952
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/official-cli.log",
+      "sha256": "1136cff5c632ac00508d79b74cab32edb333dc09e9de31f9d51add8c6741f835",
+      "bytes": 1478
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/process-metadata-at-seal.txt",
+      "sha256": "6f4e453e30b43435a20691984d3116e2d66c72217077fd9f6c4d11298183ec84",
+      "bytes": 93
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/sealed-submission/report.json",
+      "sha256": "4f59b2a3d5a492d20898358d1c6c0215f644d1eb40845ba3730f3c0ae85f057e",
+      "bytes": 1292
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/sealed-submission/eval_outputs/pypa__hatch.ff4b4040.test_fmt.782c88a8.lv1/attempt-1/report.json",
+      "sha256": "5dd0abc7adccda92becf58bd957d43c7ab51cd996aa8daa535f3479a3f4a66fd",
+      "bytes": 610
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/sealed-submission/eval_outputs/pypa__hatch.ff4b4040.test_fmt.782c88a8.lv1/attempt-1/patch.diff",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-start.json",
+      "sha256": "1fbe3164634d12171cf685b375f3b20fc76e05bf67a048c030df8a40976a823f",
+      "bytes": 191
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-v2-start.json",
+      "sha256": "6280be43b82f0b0aef7e5029f9199bd37836003ff76657066905977f121e8e94",
+      "bytes": 558
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-v3-start.json",
+      "sha256": "e4d86f0f3a64bc4243bcb59298bfd87138e0ff23719e272ef2bf4552afb55898",
+      "bytes": 623
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-v4-start.json",
+      "sha256": "cd43c2a046cfae4e842bd4a663bf0c8d2a95eb354f8bf28b49169d79dffd2b69",
+      "bytes": 705
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-v5-start.json",
+      "sha256": "cb09683d2db789cbf2128f3fc1e3ffa1b077f77d5cacd6bdd8ad3f7a7e8fca48",
+      "bytes": 800
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-exit.json",
+      "sha256": "1bbd1b86471e269139bc031ee04f7b867246cc7bb206c746e6154c9ad7a5a349",
+      "bytes": 48
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-v2-exit.json",
+      "sha256": "8a18ed8e4d20ba09e4e8c261a5ce23bc61523a5491176dc40e3525163fd1c076",
+      "bytes": 49
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-v3-exit.json",
+      "sha256": "49de6e98d41d0b7d16f90436669ea1796a7630deb038125385bd8a7d9761dbc3",
+      "bytes": 49
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-v4-exit.json",
+      "sha256": "94cd33f22df74906c694ada920f1939cda71ad02c49ca70229b34d64659297d9",
+      "bytes": 48
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-v5-exit.json",
+      "sha256": "8fc88fc90eecdca6724284d44e6134e0e910bc65c8fd6806fc3e6bf42b124c1d",
+      "bytes": 49
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-project-v2.json",
+      "sha256": "00acc10ba8e4d96860d9c6d3b7bc5c1ce929ba580fb645e59722c2b24541d541",
+      "bytes": 1716
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-project-v5.json",
+      "sha256": "ce2bc5f35d744c835c4db3fafd02896fca4dee6966eec03f1ade962280e7cbed",
+      "bytes": 1805
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-project.json",
+      "sha256": "2789a7bf91ccfb5c62ea05396a2facd88febc7225c6dc7a61f4a12c3835f9975",
+      "bytes": 1621
+    },
+    {
+      "path": "/tmp/tripleteam-featurebench-eval-20260923/network-verification.json",
+      "sha256": "3d66f3749d41a38975df48ed070e42b29ddfa34faaede0b1443f8493e02f295d",
+      "bytes": 4162
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/proxy/server.py",
+      "sha256": "686f77aee4aacde0f1be94eab0a487d00c5cb2ffd74599832f6c4aa09e50d451",
+      "bytes": 1272
+    },
+    {
+      "path": "/tmp/tripleteam-deepseek-20260923/blind-v2-environment-repair.json",
+      "sha256": "209975f9c740a89dbf29cad815c2c5749bf02b8bc45973124301a92019e34915",
+      "bytes": 327
+    }
+  ],
+  "network_verification": {
+    "verified_at": "2026-09-23T08:03:07.950787+00:00",
+    "method": "docker inspect --format restricted to network/port fields; Docker network internal/driver/created fields; AST extraction of proxy allowlist only",
+    "environment_or_credentials_dumped": false,
+    "solver": "tripleteam-featurebench-hatch-20260923",
+    "proxy": "tripleteam-deepseek-proxy-20260923",
+    "network": {
+      "name": "tripleteam-blind-20260923",
+      "driver": "bridge",
+      "internal": true,
+      "created": "2026-09-23T13:31:58.626483404+08:00"
+    },
+    "containers": {
+      "tripleteam-featurebench-hatch-20260923": {
+        "networks": {
+          "tripleteam-blind-20260923": {
+            "IPAMConfig": {
+              "IPv4Address": "",
+              "IPv6Address": ""
+            },
+            "Links": null,
+            "Aliases": [],
+            "DriverOpts": {},
+            "GwPriority": 0,
+            "NetworkID": "f7f03e79eaa9168ffc1960b064b256f4bd99acdd1b65ea66c9fab95a06332d04",
+            "EndpointID": "432036ef70bd95058dfed248e8e93bd732a4784c489ef1d617294ad5dd73597a",
+            "Gateway": "",
+            "IPAddress": "172.19.0.3",
+            "MacAddress": "06:0d:a2:b1:63:da",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "DNSNames": [
+              "tripleteam-featurebench-hatch-20260923",
+              "38a3b1451d65"
+            ]
+          }
+        },
+        "host_port_bindings": {},
+        "network_ports": {}
+      },
+      "tripleteam-deepseek-proxy-20260923": {
+        "networks": {
+          "bridge": {
+            "IPAMConfig": null,
+            "Links": null,
+            "Aliases": null,
+            "DriverOpts": null,
+            "GwPriority": 0,
+            "NetworkID": "21888ffd45e6c08b74dc3a5cb9852c30d71f26e08bfd90b1938b5511e946cf44",
+            "EndpointID": "24c5d798b30ad014a2801d853f31c6d814e1cbc3e95d7f2060a9f7a846a6296f",
+            "Gateway": "172.17.0.1",
+            "IPAddress": "172.17.0.4",
+            "MacAddress": "02:18:f4:6a:e6:60",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "DNSNames": null
+          },
+          "tripleteam-blind-20260923": {
+            "IPAMConfig": {
+              "IPv4Address": "",
+              "IPv6Address": ""
+            },
+            "Links": null,
+            "Aliases": [
+              "model-proxy"
+            ],
+            "DriverOpts": {},
+            "GwPriority": 0,
+            "NetworkID": "f7f03e79eaa9168ffc1960b064b256f4bd99acdd1b65ea66c9fab95a06332d04",
+            "EndpointID": "ef16d15d6a40df8c8640c0c1572b9f2e22bc43ee7f2dc4d0ebff2cdb01edf6fd",
+            "Gateway": "",
+            "IPAddress": "172.19.0.2",
+            "MacAddress": "3a:9e:fd:19:61:e9",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "DNSNames": [
+              "tripleteam-deepseek-proxy-20260923",
+              "model-proxy",
+              "1a0ea84dc9f6"
+            ]
+          }
+        },
+        "host_port_bindings": {},
+        "network_ports": {}
+      }
+    },
+    "proxy_config": {
+      "path": "/tmp/tripleteam-deepseek-20260923/proxy/server.py",
+      "sha256": "686f77aee4aacde0f1be94eab0a487d00c5cb2ffd74599832f6c4aa09e50d451",
+      "recorded_mtime_unix": 1790141518.3857431,
+      "allowed_method": "CONNECT",
+      "allowed_authority": "api.deepseek.com:443",
+      "rejection_checks": [
+        {
+          "condition": "len(first) != 3 or first[0] != 'CONNECT' or first[1].lower() != 'api.deepseek.com:443'",
+          "has_reject_403": true,
+          "returns_without_tunneling": true
+        }
+      ]
+    },
+    "current_state_verified": true,
+    "historical_per_trial_network_snapshots_available": false,
+    "history_limit": "Current topology and retained proxy source do not independently prove unchanged wiring or loaded proxy bytes for every prior run.",
+    "preparation_time_state": "Before parent runtime setup, the preparer recorded the container on ordinary bridge; this was subsequently changed.",
+    "scope": "Network fields and retained proxy policy only; no credentials, task source, agent conversations or hidden evaluator data read."
+  }
+}

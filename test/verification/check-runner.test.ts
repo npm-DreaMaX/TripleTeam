@@ -87,6 +87,53 @@ test("check runner records output and distinguishes pass from failure", async (c
 	assert.equal(errored.exitCode, undefined);
 });
 
+test("fresh checks prepare ignored dependencies and reject preparation source mutations", async (context) => {
+	const { cwd, runner, common } = await fixture(context);
+	await writeFile(join(cwd, ".gitignore"), "node_modules/\n");
+	await git(cwd, ["add", ".gitignore"]);
+	await git(cwd, ["commit", "-m", "ignore generated dependencies"]);
+	common.subjectCommit = await git(cwd, ["rev-parse", "HEAD"]);
+	const preparation = {
+		commands: [
+			[
+				process.execPath,
+				"-e",
+				"const fs=require('node:fs');fs.mkdirSync('node_modules');fs.writeFileSync('node_modules/dependency','ready')",
+			],
+		],
+		timeoutMs: 5000,
+	};
+	const ready = await runner.run(
+		command(
+			"require('node:assert/strict').equal(require('node:fs').readFileSync('node_modules/dependency','utf8'),'ready')",
+			{ preparation },
+		),
+		common,
+	);
+	assert.equal(ready.state, "PASSED");
+	assert.equal(ready.result.preparation?.[0]?.state, "PASSED");
+	const failed = await runner.run(
+		command("console.log('MUST NOT RUN')", {
+			preparation: { ...preparation, commands: [[process.execPath, "-e", "process.exit(7)"]] },
+		}),
+		common,
+	);
+	assert.equal(failed.state, "ERROR");
+	assert.equal(failed.result.errorCode, "CHECK_PREPARATION_FAILED");
+	assert.doesNotMatch(await readFile(failed.stdoutPath, "utf8"), /MUST NOT RUN/);
+	const mutated = await runner.run(
+		command("", {
+			preparation: {
+				...preparation,
+				commands: [[process.execPath, "-e", "require('node:fs').writeFileSync('value.txt','cheat')"]],
+			},
+		}),
+		common,
+	);
+	assert.equal(mutated.state, "FAILED");
+	assert.match(mutated.result.errorCode ?? "", /MUTATED|MISMATCH/);
+});
+
 test("check names and npm test detection never imply behavioral assurance", async (context) => {
 	const { cwd } = await fixture(context);
 	assert.equal(evidenceClassForCheck(command("", { name: "integration-e2e-test" })), "STRUCTURAL");

@@ -87,6 +87,7 @@ export async function runMilestoneStep(input: {
 		);
 		if (!next)
 			return { state: "WAITING", reason: "The official public task queue has not released another planned goal" };
+		assertBenchmarkConfiguration(orchestrator, frozen, next.id);
 		const usage = mappings.map((candidate) => readTrialUsage(orchestrator, candidate.run_id));
 		if (usage.some((record) => !record.costComplete)) {
 			return {
@@ -128,6 +129,13 @@ export async function runMilestoneStep(input: {
 		}
 	}
 	const artifact = await authoritativeArtifact(orchestrator, mapping.run_id);
+	const runtime = (orchestrator.catalog.getRun(mapping.run_id).goalContract as { runtimeConfiguration?: unknown })
+		.runtimeConfiguration;
+	if (
+		frozen.manifest.runtimeConfigHashes &&
+		(!runtime || hashJson(runtime) !== frozen.manifest.runtimeConfigHashes[mapping.instance_id])
+	)
+		throw new Error("Milestone did not use its frozen runtime configuration");
 	if (artifact.baseCommit !== campaign.currentHead)
 		throw new Error("Milestone did not build on the campaign integration head");
 	const delivery = await orchestrator.result(mapping.run_id);

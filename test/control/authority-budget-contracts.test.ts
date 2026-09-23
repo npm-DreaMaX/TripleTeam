@@ -59,6 +59,7 @@ async function fixture(context: TestContext, decisionMode = "interactive") {
 	await writeFile(
 		join(repository, ".tripleteam.json"),
 		JSON.stringify({
+			assurance: { mode: "off" }, // Contract/CAS fixtures provide their own deterministic checks.
 			execution: { decisionMode },
 			candidateChecks: [check],
 			integrationChecks: [check],
@@ -381,7 +382,7 @@ test("the real executor rechecks transitive accepted consumers before publishing
 			scope: [file],
 			constraints: [],
 			riskClass: "LOW",
-			acceptanceContract: { candidateChecks: [check], integrationChecks: [taskCheck], requireReview: false },
+			acceptanceContract: { candidateChecks: [check], integrationChecks: [check, taskCheck], requireReview: false },
 			actor: system,
 		});
 		f.app.kernel.markTaskReady(id, system);
@@ -638,7 +639,7 @@ test("migration from populated v7 preserves exploration evidence and allows only
 	context.after(() => database.close());
 	const kernel = new ControlKernel(database);
 	const catalog = new ControlCatalog(database);
-	assert.equal(database.sql.prepare("PRAGMA user_version").get<{ user_version: number }>()?.user_version, 8);
+	assert.equal(database.sql.prepare("PRAGMA user_version").get<{ user_version: number }>()?.user_version, 9);
 	assert.deepEqual(
 		catalog
 			.listExplorations("task")

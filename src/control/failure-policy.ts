@@ -69,6 +69,8 @@ export class FailurePolicy {
 		evidenceIdentity?: string;
 		evidenceRefs?: string[];
 		proposalAvailable?: boolean;
+		/** The failed stage already consumed its own bounded recovery allowance. */
+		recoveryExhausted?: boolean;
 	}): FailureDiagnosis {
 		const fingerprint = failureFingerprint(input.phase, input.classification, input.detail, input.evidenceIdentity);
 		const occurrence = this.catalog.countFailureFingerprint(input.runId, fingerprint, input.taskId) + 1;
@@ -89,7 +91,8 @@ export class FailurePolicy {
 				).length,
 		);
 		let disposition: FailureDisposition;
-		if (!executionPolicyFor(run.goalContract).enableFailureAdaptation) {
+		if (input.recoveryExhausted) disposition = "BLOCK";
+		else if (!executionPolicyFor(run.goalContract).enableFailureAdaptation) {
 			const infrastructure = input.classification === "INFRASTRUCTURE" || input.classification === "RESOURCE";
 			const retryAllowed = attemptsRemain || (infrastructure && input.phase.endsWith("_CHECK_RUNTIME"));
 			disposition =

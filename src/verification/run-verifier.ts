@@ -11,6 +11,7 @@ import type { ControlCatalog } from "../control/catalog.ts";
 import { ContractVerifier } from "../control/contract-verifier.ts";
 import type { ControlKernel } from "../control/kernel.ts";
 import type { GitWorkspaceManager } from "../workspace/git.ts";
+import type { AssuranceService } from "./assurance-service.ts";
 import type { CheckRunner } from "./check-runner.ts";
 
 export interface RunVerificationResult {
@@ -27,6 +28,7 @@ export class RunVerifier {
 		private readonly checks: CheckRunner,
 		private readonly paths: ProjectPaths,
 		private readonly config: ProjectConfig,
+		private readonly assurance?: AssuranceService,
 	) {}
 
 	async verify(runId: string): Promise<RunVerificationResult> {
@@ -97,6 +99,16 @@ export class RunVerifier {
 			} finally {
 				await this.workspaces.removeWorktree(worktree);
 			}
+		}
+		if (this.assurance) {
+			const independent = await this.assurance.evaluate(
+				this.catalog.listTasks(runId, ["ACCEPTED"]).map((t) => t.id),
+				run.integrationHead,
+				"RUN",
+				run.id,
+			);
+			checkIds.push(...independent.checkIds);
+			if (independent.status !== "PASSED") return { status: independent.status, treeHash, checkIds };
 		}
 		if (
 			this.catalog.getRun(runId).integrationHead !== run.integrationHead ||

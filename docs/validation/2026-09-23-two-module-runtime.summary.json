@@ -1,0 +1,183 @@
+{
+  "protocol": "controlled-public-specification-v1",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "humanInterventions": 0,
+  "runId": "3c7ecd3a-0c10-4cd7-8993-9ccd3b8a7c2a",
+  "inputCommit": "fde342416401e00eb55f69e4a55224d60491967f",
+  "inputTree": "671f57d306b6271ef7b023bead85d797c6277b0c",
+  "result": "VERIFIED_DELIVERY",
+  "finalCommit": "f0e87a9479ecf5a9fa5d8077ddde551181b1fddd",
+  "finalTree": "12a9b8094c35a84a92e6eb98fdf1f5e599a9d9ed",
+  "tasks": [
+    {
+      "state": "ACCEPTED",
+      "count": 2
+    }
+  ],
+  "checks": [
+    {
+      "subject": "CANDIDATE",
+      "state": "FAILED",
+      "count": 2
+    },
+    {
+      "subject": "CANDIDATE",
+      "state": "PASSED",
+      "count": 13
+    },
+    {
+      "subject": "INTEGRATION",
+      "state": "PASSED",
+      "count": 14
+    },
+    {
+      "subject": "RUN",
+      "state": "PASSED",
+      "count": 13
+    }
+  ],
+  "failures": [
+    {
+      "phase": "INDEPENDENT_VERIFY",
+      "classification": "VERIFICATION",
+      "disposition": "RETRY"
+    }
+  ],
+  "coordinationModes": [
+    {
+      "mode": "PARALLEL_TASKS",
+      "count": 1
+    },
+    {
+      "mode": "SINGLE",
+      "count": 1
+    }
+  ],
+  "usageByPhase": [
+    {
+      "phase": "CANDIDATE:regression",
+      "records": 3,
+      "estimatedCostUsd": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "cacheReadTokens": null,
+      "durationMs": 4780.0
+    },
+    {
+      "phase": "IMPLEMENT",
+      "records": 3,
+      "estimatedCostUsd": 0.025776359999999998,
+      "inputTokens": 30154,
+      "outputTokens": 12601,
+      "cacheReadTokens": 268160,
+      "durationMs": 82623.0
+    },
+    {
+      "phase": "INDEPENDENT_PROBE",
+      "records": 32,
+      "estimatedCostUsd": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "cacheReadTokens": null,
+      "durationMs": 52330.0
+    },
+    {
+      "phase": "INTEGRATION:regression",
+      "records": 2,
+      "estimatedCostUsd": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "cacheReadTokens": null,
+      "durationMs": 2395.0
+    },
+    {
+      "phase": "PARALLEL_TASKS",
+      "records": 2,
+      "estimatedCostUsd": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "cacheReadTokens": null,
+      "durationMs": 394007.0
+    },
+    {
+      "phase": "PLAN",
+      "records": 1,
+      "estimatedCostUsd": 0.00399072,
+      "inputTokens": 5668,
+      "outputTokens": 1835,
+      "cacheReadTokens": 14720,
+      "durationMs": 11455.0
+    },
+    {
+      "phase": "PROBE_CONTROL",
+      "records": 4,
+      "estimatedCostUsd": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "cacheReadTokens": null,
+      "durationMs": 5792.0
+    },
+    {
+      "phase": "PROBE_CRITIQUE",
+      "records": 3,
+      "estimatedCostUsd": 0.030345023999999998,
+      "inputTokens": 14732,
+      "outputTokens": 21417,
+      "cacheReadTokens": 37504,
+      "durationMs": 115071.0
+    },
+    {
+      "phase": "REVIEW",
+      "records": 2,
+      "estimatedCostUsd": 0.015021851999999999,
+      "inputTokens": 12817,
+      "outputTokens": 9161,
+      "cacheReadTokens": 30592,
+      "durationMs": 48899.0
+    },
+    {
+      "phase": "RUN:full-acceptance",
+      "records": 1,
+      "estimatedCostUsd": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "cacheReadTokens": null,
+      "durationMs": 1214.0
+    },
+    {
+      "phase": "SINGLE",
+      "records": 1,
+      "estimatedCostUsd": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "cacheReadTokens": null,
+      "durationMs": 85100.0
+    },
+    {
+      "phase": "SPECIFICATION_DESIGN",
+      "records": 4,
+      "estimatedCostUsd": 0.053554056,
+      "inputTokens": 12834,
+      "outputTokens": 41281,
+      "cacheReadTokens": 27776,
+      "durationMs": 173169.0
+    }
+  ],
+  "writerWindows": [
+    {
+      "startedAt": "2026-09-23T05:57:53.624Z",
+      "finishedAt": "2026-09-23T05:58:17.855Z"
+    },
+    {
+      "startedAt": "2026-09-23T05:58:31.694Z",
+      "finishedAt": "2026-09-23T05:58:53.420Z"
+    },
+    {
+      "startedAt": "2026-09-23T05:59:03.249Z",
+      "finishedAt": "2026-09-23T05:59:39.915Z"
+    }
+  ],
+  "estimatedCostUsd": 0.12868801200000002,
+  "writerWindowsOverlap": false
+}

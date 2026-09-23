@@ -2,6 +2,7 @@ import { access } from "node:fs/promises";
 import { createNodeSqliteFactory } from "@earendil-works/pi-session-backend-sqlite-node";
 import { executionPolicyFor } from "../config/execution.ts";
 import { projectPaths } from "../config/paths.ts";
+import { type CheckCommand, checkCommandVersion } from "../config/project.ts";
 import { ControlCatalog } from "../control/catalog.ts";
 import type { ControlDatabase } from "../store/database.ts";
 import { MIGRATIONS } from "../store/schema.ts";
@@ -26,6 +27,13 @@ export interface DashboardSnapshot {
 	contracts: { total: number; satisfied: number };
 	usage: { cost: number; tokens: number; unsettled: number; executions: number; live: number; limit?: number };
 	coordination: { mode: string; rationale: string } | null;
+	explanation: {
+		liveWriters: number;
+		baseline: string;
+		finalChecks: Array<{ name: string; state: string }>;
+		allocations: Array<{ task: string; action: string; reason: string }>;
+		observationsReused: number;
+	};
 	decisions: Array<{ id: string; question: string; options: string[] }>;
 	events: Array<{ id: string; type: string; time: string; detail: string }>;
 	delivery: { result: string; ref: string | null; tree: string; manifest: string } | null;
@@ -43,6 +51,7 @@ export function emptyDashboard(repository: string): DashboardSnapshot {
 		contracts: { total: 0, satisfied: 0 },
 		usage: { cost: 0, tokens: 0, unsettled: 0, executions: 0, live: 0 },
 		coordination: null,
+		explanation: { liveWriters: 0, baseline: "Not recorded", finalChecks: [], allocations: [], observationsReused: 0 },
 		decisions: [],
 		events: [],
 		delivery: null,
@@ -135,6 +144,48 @@ export async function readDashboard(repository: string, runId?: string): Promise
 					"SELECT mode, rationale FROM coordination_decisions WHERE run_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 1",
 				)
 				.get<{ mode: string; rationale: string }>(run.id) ?? null;
+		const actions = catalog.listControlActions(run.id);
+		const baseline = actions.findLast((action) => action.kind === "BASELINE_VERIFIED");
+		const receipt = baseline ? (JSON.parse(baseline.detail_json) as { checks: Array<{ state: string }> }) : null;
+		const tree = sql
+			.prepare("SELECT integration_tree_hash AS tree FROM runs WHERE id=?")
+			.get<{ tree: string | null }>(run.id)?.tree;
+		const frozenChecks = (run.goalContract as { runChecks?: CheckCommand[] }).runChecks ?? [];
+		snapshot.explanation = {
+			liveWriters:
+				sql
+					.prepare(
+						"SELECT COUNT(*) AS n FROM executions e JOIN attempts a ON a.id=e.attempt_id WHERE a.run_id=? AND a.workflow_function='IMPLEMENT' AND e.state='LIVE'",
+					)
+					.get<{ n: number }>(run.id)?.n ?? 0,
+			baseline: receipt
+				? `${receipt.checks.filter((c) => c.state === "PASSED").length}/${receipt.checks.length} checks passed on input tree`
+				: actions.some((a) => a.kind === "BASELINE_STARTED")
+					? "Checking input tree"
+					: "Not recorded",
+			finalChecks: frozenChecks.map((check) => ({
+				name: check.name,
+				state: tree
+					? (sql
+							.prepare(
+								"SELECT state FROM check_runs WHERE run_id=? AND subject_kind='RUN' AND subject_id=? AND tree_hash=? AND check_kind=? AND check_version=? ORDER BY rowid DESC LIMIT 1",
+							)
+							.get<{ state: string }>(run.id, run.id, tree, check.name, checkCommandVersion(check))?.state ?? "PENDING")
+					: "PENDING",
+			})),
+			allocations: actions
+				.filter((a) => a.kind === "VERIFICATION_ALLOCATION")
+				.slice(-5)
+				.map((a) => {
+					const detail = JSON.parse(a.detail_json);
+					return {
+						task: snapshot.tasks.find((t) => t.id === a.task_id)?.title ?? "Task",
+						action: detail.action,
+						reason: detail.reason,
+					};
+				}),
+			observationsReused: actions.filter((a) => a.kind === "EXPLORATION_REUSED").length,
+		};
 		snapshot.decisions = catalog
 			.listOpenDecisionRequests(run.id)
 			.map(({ id, question, options }) => ({ id, question, options }));
@@ -218,6 +269,19 @@ export function demoDashboard(): DashboardSnapshot {
 		checks: { PASSED: 6, RUNNING: 1 },
 		contracts: { total: 2, satisfied: 2 },
 		usage: { cost: 0, tokens: 0, unsettled: 0, executions: 0, live: 2 },
+		explanation: {
+			liveWriters: 2,
+			baseline: "Existing behavior checks passed (sample)",
+			finalChecks: [{ name: "Complete export workflow", state: "PENDING" }],
+			allocations: [
+				{
+					task: "Implement the export API",
+					action: "IMPLEMENT_WITH_FROZEN_CHECKS",
+					reason: "The verified contract and frozen behavior checks support this increment (sample)",
+				},
+			],
+			observationsReused: 0,
+		},
 		coordination: {
 			mode: "PARALLEL_TASKS",
 			rationale:

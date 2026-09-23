@@ -115,6 +115,7 @@ export class DeliveryReporter {
 				missingUsage: "UNKNOWN",
 			},
 			coordination: {
+				assurancePlans: this.kernel.assurance.list(run.id),
 				contracts: tasks
 					.map((task) => {
 						const contract = this.catalog.getCoordinationContract(task.id);

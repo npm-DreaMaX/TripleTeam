@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="475" height="558" viewBox="0 0 475 558" role="img" aria-labelledby="title desc">
+<title id="title">TripleTeam interactive terminal</title><desc id="desc">The actual shell renderer displaying labeled sample data at 48 columns. One main view, an always available input, and a short status bar. No benchmark or performance result is shown.</desc>
+<rect width="475" height="558" rx="12" fill="#171819"/>
+<path d="M0 47H475" stroke="#45494d"/>
+<text x="20" y="29" font-family="system-ui,sans-serif" font-size="12" fill="#a9aeaf">tripleteam demo · 48 columns</text>
+<g font-family="DejaVu Sans Mono, Consolas, monospace" font-size="15.5" xml:space="preserve"><text x="14.0" y="77" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="77" fill="rgb(181,203,165)" font-weight="600">TripleTeam</text>
+<text x="125.6" y="77" fill="rgb(169,174,175)" font-weight="400">  Preview / sample data</text>
+<text x="14.0" y="100" fill="#eceeed" font-weight="400">  </text>
+<text x="14.0" y="123" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="123" fill="rgb(236,238,237)" font-weight="600">Build a resumable export workflow across</text>
+<text x="14.0" y="146" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="146" fill="rgb(236,238,237)" font-weight="600">API, workers and SDK.</text>
+<text x="14.0" y="169" fill="#eceeed" font-weight="400">  </text>
+<text x="14.0" y="192" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="192" fill="rgb(181,203,165)" font-weight="400">In progress · 2 of 5 tasks done</text>
+<text x="14.0" y="215" fill="#eceeed" font-weight="400">  </text>
+<text x="14.0" y="238" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="238" fill="rgb(236,238,237)" font-weight="400">Working Implement the export API</text>
+<text x="14.0" y="261" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="261" fill="rgb(236,238,237)" font-weight="400">Working Add SDK progress and resume support</text>
+<text x="14.0" y="284" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="284" fill="rgb(169,174,175)" font-weight="400">parallel tasks · 2 live writers · /why</text>
+<text x="14.0" y="307" fill="#eceeed" font-weight="400">  </text>
+<text x="14.0" y="330" fill="#eceeed" font-weight="400">  </text>
+<text x="14.0" y="353" fill="#eceeed" font-weight="400">  </text>
+<text x="14.0" y="376" fill="#eceeed" font-weight="400">  </text>
+<text x="14.0" y="399" fill="#eceeed" font-weight="400">  </text>
+<text x="14.0" y="422" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="422" fill="rgb(169,174,175)" font-weight="400">────────────────────────────────────────────</text>
+<text x="14.0" y="445" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="445" fill="rgb(181,203,165)" font-weight="400">› </text>
+<text x="51.2" y="445" fill="rgb(169,174,175)" font-weight="400">Type a goal or /help</text>
+<text x="14.0" y="468" fill="#eceeed" font-weight="400">  </text>
+<text x="14.0" y="491" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="491" fill="rgb(169,174,175)" font-weight="400">Sample data · no model calls or files chang</text>
+<text x="432.5" y="491" fill="#eceeed" font-weight="400">…</text>
+<text x="14.0" y="514" fill="#eceeed" font-weight="400">  </text>
+<text x="32.6" y="514" fill="rgb(169,174,175)" font-weight="400">/help · Tab complete · Ctrl+C interrupt</text></g></svg>

@@ -22,6 +22,21 @@ export interface RunRecord {
 	terminalReason: string | null;
 }
 
+export interface TaskPerformance {
+	taskId: string;
+	durationMs: number;
+	costUsd: number;
+	writerSamples: number;
+	checksMs: number;
+	auxiliaryMs: number;
+	auxiliaryCostUsd: number;
+	explorationMs: number;
+	explorationCostUsd: number;
+	explorationSamples: number;
+	successes: number;
+	failures: number;
+}
+
 export interface TaskDefinition {
 	id: string;
 	runId: string;
@@ -772,16 +787,43 @@ FROM exploration_records WHERE task_id = ?${filter} ORDER BY created_at`,
 			.all(runId);
 	}
 
-	performanceHistory(
-		runId: string,
-	): Array<{ taskId: string; durationMs: number; costUsd: number; checksMs: number; failures: number }> {
+	planningUsage(runId: string): { tokens: number; toolCalls: number; durationMs: number } {
 		return this.db
-			.prepare(`SELECT t.id AS taskId,
- COALESCE((SELECT AVG(duration_ms) FROM usage_records u WHERE u.task_id=t.id AND u.kind='AGENT'),0) AS durationMs,
- COALESCE((SELECT AVG(cost_usd) FROM usage_records u WHERE u.task_id=t.id AND u.kind='AGENT'),0) AS costUsd,
- COALESCE((SELECT AVG(duration_ms) FROM usage_records u WHERE u.task_id=t.id AND u.kind='CHECK'),0) AS checksMs,
- (SELECT COUNT(*) FROM failure_diagnoses f WHERE f.task_id=t.id) AS failures FROM tasks t WHERE t.run_id=?`)
-			.all(runId);
+			.prepare(`SELECT
+ COALESCE(SUM(COALESCE(input_tokens,0)+COALESCE(output_tokens,0)+COALESCE(cache_read_tokens,0)+COALESCE(cache_write_tokens,0)),0) AS tokens,
+ COALESCE(SUM(tool_calls),0) AS toolCalls,COALESCE(SUM(duration_ms),0) AS durationMs
+ FROM usage_records WHERE run_id=? AND kind='AGENT' AND phase LIKE 'PLAN%'`)
+			.get<{ tokens: number; toolCalls: number; durationMs: number }>(runId) as {
+			tokens: number;
+			toolCalls: number;
+			durationMs: number;
+		};
+	}
+
+	performanceHistory(runId: string): TaskPerformance[] {
+		return this.db
+			.prepare(`WITH writers AS (
+ SELECT u.task_id,u.attempt_id,SUM(u.duration_ms) AS duration_ms,SUM(u.cost_usd) AS cost_usd
+ FROM usage_records u JOIN attempts a ON a.id=u.attempt_id
+ WHERE u.run_id=? AND u.kind='AGENT' AND u.phase IN ('IMPLEMENT','IMPLEMENT_RESUME')
+ AND a.workflow_function='IMPLEMENT' AND a.state IN ('SUBMITTED','FAILED')
+ GROUP BY u.task_id,u.attempt_id
+), samples AS (
+ SELECT task_id,AVG(duration_ms) AS duration_ms,AVG(cost_usd) AS cost_usd,COUNT(*) AS count
+ FROM writers GROUP BY task_id
+)
+SELECT t.id AS taskId,COALESCE(s.duration_ms,0) AS durationMs,COALESCE(s.cost_usd,0) AS costUsd,
+ COALESCE(s.count,0) AS writerSamples,
+ COALESCE((SELECT SUM(duration_ms) FROM usage_records u WHERE u.task_id=t.id AND u.kind='CHECK'),0)/MAX(1,COALESCE(s.count,0)) AS checksMs,
+ COALESCE((SELECT SUM(duration_ms) FROM usage_records u WHERE u.task_id=t.id AND u.kind='AGENT' AND u.phase NOT IN ('IMPLEMENT','IMPLEMENT_RESUME')),0)/MAX(1,COALESCE(s.count,0)) AS auxiliaryMs,
+ COALESCE((SELECT SUM(cost_usd) FROM usage_records u WHERE u.task_id=t.id AND u.kind='AGENT' AND u.phase NOT IN ('IMPLEMENT','IMPLEMENT_RESUME')),0)/MAX(1,COALESCE(s.count,0)) AS auxiliaryCostUsd,
+ COALESCE((SELECT AVG(duration_ms) FROM usage_records u WHERE u.task_id=t.id AND u.kind='AGENT' AND u.phase IN ('DIVERSE_EXPLORATION','REPLAN')),0) AS explorationMs,
+ COALESCE((SELECT AVG(cost_usd) FROM usage_records u WHERE u.task_id=t.id AND u.kind='AGENT' AND u.phase IN ('DIVERSE_EXPLORATION','REPLAN')),0) AS explorationCostUsd,
+ (SELECT COUNT(*) FROM usage_records u WHERE u.task_id=t.id AND u.kind='AGENT' AND u.phase IN ('DIVERSE_EXPLORATION','REPLAN')) AS explorationSamples,
+ (SELECT COUNT(*) FROM attempts a WHERE a.task_id=t.id AND a.workflow_function='IMPLEMENT' AND EXISTS (SELECT 1 FROM candidates c WHERE c.attempt_id=a.id AND c.state='INTEGRATED')) AS successes,
+ (SELECT COUNT(*) FROM attempts a WHERE a.task_id=t.id AND a.workflow_function='IMPLEMENT' AND (a.state='FAILED' OR EXISTS (SELECT 1 FROM candidates c WHERE c.attempt_id=a.id AND c.state='REJECTED')) AND NOT EXISTS (SELECT 1 FROM candidates c WHERE c.attempt_id=a.id AND c.state='INTEGRATED')) AS failures
+ FROM tasks t LEFT JOIN samples s ON s.task_id=t.id WHERE t.run_id=?`)
+			.all<TaskPerformance>(runId, runId);
 	}
 
 	listContractEvidence(contractId: string): Array<{

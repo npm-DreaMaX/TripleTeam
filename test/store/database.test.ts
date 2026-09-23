@@ -56,7 +56,7 @@ test("control database creates the complete authoritative schema", async (contex
 	}
 
 	const version = database.sql.prepare("PRAGMA user_version").get<{ user_version: number }>();
-	assert.equal(version?.user_version, 8);
+	assert.equal(version?.user_version, 9);
 });
 
 test("legacy v1 state migrates without losing active attempt ownership", async (context) => {

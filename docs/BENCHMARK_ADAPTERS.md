@@ -1,6 +1,6 @@
 # Benchmark adapters and blind development exercises
 
-Status: runnable adapter code and deterministic contract tests are implemented. No paid model evaluation or public leaderboard result is claimed here. The native blind exercise is separately labelled and cannot establish a score, price advantage, or end-to-end Pi runtime performance.
+Status: runnable adapters and deterministic contract tests are implemented. Paid Pi runtime development trials and the earlier native solver exercise are recorded separately under [validation](validation/). They do not establish a public leaderboard result, a cost advantage or a fair cross-product comparison.
 
 ## Boundaries
 
@@ -38,6 +38,10 @@ node --import tsx src/benchmark/main.ts freeze /path/to/manifest-input.json /pat
 ```
 
 The built distribution may expose the same entry as `tripleteam-benchmark`.
+
+For new experiments, add `runtimeConfigHashes` to the manifest: one `instanceId → runtimeConfigHash` entry for every planned instance. `config-hash` returns the complete configuration hash alongside `executionConfigHash`. This additionally freezes check scopes, preparation, baseline and assurance settings before model execution. Launch/export validate those hashes. Historical manifests without this field retain their original contract.
+
+Offline paired analysis is available through `compare-featurebench LEFT_MANIFEST LEFT_OUTPUT LEFT_VERDICTS RIGHT_MANIFEST RIGHT_OUTPUT RIGHT_VERDICTS`. It requires matching task/data/environment/protocol/budget/replicate, retains every planned instance, and suppresses comparative accuracy/cost claims when the required records are missing. The optional interval uses repository-cluster bootstrap. See the [evaluation guide](BENCHMARK_GUIDE.zh-CN.md) for interpretation and limitations.
 
 Create the manifest using the shape below. Replace every placeholder with an actual pinned value; placeholders intentionally fail validation. `executionConfigHash` comes from `config-hash`, which hashes the normalized execution policy including model, reasoning, policy ablations and limits. Budget values must exactly match the repository's base execution configuration. For FeatureBench they apply per instance; for SWE-Milestone they apply to the entire campaign.
 
@@ -93,6 +97,16 @@ The public envelope passed to TripleTeam has exactly these fields:
 ```
 
 Do not pass a full dataset row. The parser rejects `patch`, `test_patch`, held-out test fields, and every other unsupported field. Keep evaluator data and gold code outside the agent container. The prepared baseline commit is the export patch base.
+
+### Check the public execution environment before inference
+
+Validate the configured public check commands in a fresh worktree of the masked baseline, using the same interpreter, dependencies, working directory and isolation as the run. Record the baseline outputs before freezing the trial. Run `tripleteam doctor` inside the actual solver environment as well; a working host installation does not validate the container's Pi search tools.
+
+A test assertion that fails because a requested feature was removed is different from a collection/import error or a missing generated build file. Prepare the latter through the repository's build environment. An editable installation pointing to another checkout must not silently substitute its source for the exact candidate tree.
+
+Choose the check stages before the trial. Every Task must pass its frozen integration checks before dependent Tasks can use its artifacts. A suite requiring the entire feature is therefore suitable as a final run check; placing it at every intermediate integration requires a task graph whose intermediate states can pass that suite. If the feature cannot be split into independently verifiable increments, use a whole-goal Task. Never remove a frozen check after seeing a failing candidate.
+
+The September 23 development exercise reached public pytest collection errors during intermediate integration. Its records preserve the failed configuration and the unchanged authoritative tree; this is useful environment/control-path evidence, not a clean estimate of model quality. The official hidden evaluator remains separate and sees only the sealed submission.
 
 ### Execute and export
 

@@ -110,12 +110,39 @@ export class AdaptiveCoordinationPolicy {
 			);
 		};
 		const history = this.catalog.performanceHistory(runId);
-		const observed = history.filter((item) => item.durationMs > 0);
-		const mean = (field: "durationMs" | "costUsd" | "checksMs", fallback: number) =>
-			observed.length ? observed.reduce((sum, item) => sum + item[field], 0) / observed.length || fallback : fallback;
+		const observed = history.filter((item) => item.writerSamples > 0);
+		const mean = (
+			field: "durationMs" | "costUsd" | "checksMs" | "auxiliaryMs" | "auxiliaryCostUsd",
+			fallback: number,
+		) => {
+			const samples = observed.reduce((sum, item) => sum + item.writerSamples, 0);
+			return samples ? observed.reduce((sum, item) => sum + item[field] * item.writerSamples, 0) / samples : fallback;
+		};
 		const duration = mean("durationMs", 600_000);
 		const cost = mean("costUsd", policy.reservationUsd);
 		const checks = mean("checksMs", 30_000);
+		const auxiliary = mean("auxiliaryMs", duration * 0.15);
+		const auxiliaryCost = mean("auxiliaryCostUsd", policy.reservationUsd * 0.5);
+		const successes = history.reduce((sum, item) => sum + item.successes, 0);
+		const failures = history.reduce((sum, item) => sum + item.failures, 0);
+		const reliability = (taskId: string) => {
+			const local = history.find((entry) => entry.taskId === taskId);
+			const otherSuccesses = successes - (local?.successes ?? 0);
+			const otherFailures = failures - (local?.failures ?? 0);
+			const otherCount = otherSuccesses + otherFailures;
+			// Cap cross-task transfer: tasks in one run are not exchangeable experiments.
+			const transfer = otherCount ? Math.min(4, otherCount) / otherCount : 0;
+			const alpha = 2 + (local?.successes ?? 0) + transfer * otherSuccesses;
+			const beta = 2 + (local?.failures ?? 0) + transfer * otherFailures;
+			const average = alpha / (alpha + beta);
+			const deviation = Math.sqrt((alpha * beta) / ((alpha + beta) ** 2 * (alpha + beta + 1)));
+			return {
+				successProbability: average,
+				conservativeSuccessScore: Math.max(0, average - deviation),
+				localOutcomes: (local?.successes ?? 0) + (local?.failures ?? 0),
+				transferredOutcomes: Math.min(4, otherCount),
+			};
+		};
 		const dependencies = this.catalog.listDependencies(runId);
 		const scores = new Map<string, number>();
 		const visiting = new Set<string>();
@@ -176,6 +203,7 @@ export class AdaptiveCoordinationPolicy {
 				signals,
 			);
 		}
+		const explorationEstimates: Array<Record<string, unknown>> = [];
 		const exploration = signals.find((item) => {
 			if (!item.assessment) return false;
 			const explicitlyRequested = this.catalog.latestFailureDiagnosis(item.task.id)?.disposition === "DIVERSE_EXPLORE";
@@ -187,14 +215,42 @@ export class AdaptiveCoordinationPolicy {
 				policy.maxExplorationAttempts,
 			);
 			if (!pending.length) return false;
-			const avoidedRework = duration * (explicitlyRequested ? 0.65 : 0.45);
-			const estimatedExplore = duration * 0.2;
-			return (
+			const local = history.find((entry) => entry.taskId === item.task.id);
+			const risk = 1 - reliability(item.task.id).successProbability;
+			const sessions = Math.min(pending.length, this.resources.policy.lanes.INTERACTIVE.limit);
+			const avoidableFraction = explicitlyRequested ? 0.8 : 0.65;
+			const avoidedRework = (local?.durationMs || duration) * risk * avoidableFraction;
+			const estimatedExplore = (local?.explorationMs || duration * 0.2) * sessions;
+			const exploreCost = (local?.explorationCostUsd || cost * 0.2) * sessions;
+			const selected =
 				policy.policy === "HEURISTIC" ||
 				(avoidedRework > estimatedExplore &&
-					(policy.costLimitUsd === undefined || policy.costLimitUsd - budget.costUsd - budget.reservedUsd > cost * 1.2))
-			);
+					(budget.remainingMs === null || budget.remainingMs > estimatedExplore + duration + checks) &&
+					(policy.costLimitUsd === undefined ||
+						policy.costLimitUsd - budget.costUsd - budget.reservedUsd > cost + auxiliaryCost + exploreCost));
+			explorationEstimates.push({
+				taskId: item.task.id,
+				avoidedReworkMs: avoidedRework,
+				estimatedExploreMs: estimatedExplore,
+				exploreCostUsd: exploreCost,
+				sessions,
+				observedSessions: local?.explorationSamples ?? 0,
+				avoidableFraction,
+				selected,
+			});
+			return selected;
 		});
+		if (explorationEstimates.length)
+			this.kernel.recordControlAction({
+				runId,
+				kind: "EXPLORATION_ESTIMATE",
+				detail: {
+					model: "bounded-value-of-information/v2",
+					calibrated: false,
+					budget,
+					estimates: explorationEstimates,
+				},
+			});
 		if (exploration && active.length === 0) {
 			return this.persist(
 				run,
@@ -224,38 +280,48 @@ export class AdaptiveCoordinationPolicy {
 					: item.assessment?.semanticCoupling === "MEDIUM"
 						? 0.3
 						: 0.6;
-			const successProbability = 2 / (2 + (h?.failures ?? 0));
-			const duplicateCost = duration * (item.assessment?.decomposability === "HIGH" ? 0.05 : 0.2);
-			const verificationCost = checks * (1 + this.resources.snapshot().activeByLane.HEAVY_CHECK);
+			const success = reliability(item.task.id);
+			const writerDuration = h?.durationMs || duration;
+			const duplicateCost = writerDuration * (item.assessment?.decomposability === "HIGH" ? 0.05 : 0.2);
+			const verificationCost = (h?.checksMs || checks) * (1 + this.resources.snapshot().activeByLane.HEAVY_CHECK);
+			const auxiliaryMs = h?.auxiliaryMs || auxiliary;
 			return {
 				taskId: item.task.id,
 				criticalPathMs: critical(item.task.id),
-				estimatedCostUsd: h?.costUsd || cost,
-				estimatedDurationMs: h?.durationMs || duration,
-				successProbability,
+				estimatedCostUsd: (h?.costUsd || cost) + (h?.auxiliaryCostUsd || auxiliaryCost),
+				estimatedDurationMs: writerDuration,
+				...success,
+				writerSamples: h?.writerSamples ?? 0,
 				duplicateCostMs: duplicateCost,
 				verificationCostMs: verificationCost,
-				marginalUsefulMs: duration * successProbability * (1 - coupling) - duplicateCost - verificationCost,
+				auxiliaryCostMs: auxiliaryMs,
+				marginalUsefulMs:
+					writerDuration * success.conservativeSuccessScore * (1 - coupling) -
+					duplicateCost -
+					verificationCost -
+					auxiliaryMs,
 			};
 		});
 		this.kernel.recordControlAction({
 			runId,
 			kind: "COMPUTE_ESTIMATE",
 			detail: {
-				model: "conservative-online-estimator/v1",
+				model: "phase-aware-shrinkage-estimator/v2",
+				calibrated: false,
 				source: observed.length ? "runtime-history-with-priors" : "uncalibrated-priors",
 				budget,
 				estimates,
 			},
 		});
 		const selected: TaskSignals[] = [];
+		let selectedCost = 0;
 		for (const candidate of signals) {
 			if (selected.length >= limit) break;
 			const estimate = estimates.find((entry) => entry.taskId === candidate.task.id);
 			if (!estimate) continue;
 			const affordable =
 				policy.costLimitUsd === undefined ||
-				cost * (selected.length + 1) <= policy.costLimitUsd - budget.costUsd - budget.reservedUsd;
+				estimate.estimatedCostUsd + selectedCost <= policy.costLimitUsd - budget.costUsd - budget.reservedUsd;
 			const worthwhile = policy.policy === "HEURISTIC" || (estimate.marginalUsefulMs > 0 && affordable);
 			if (
 				worthwhile &&
@@ -263,6 +329,7 @@ export class AdaptiveCoordinationPolicy {
 				[...activeSignals, ...selected].every((other) => semanticallyIndependent(candidate, other))
 			) {
 				selected.push(candidate);
+				selectedCost += estimate.estimatedCostUsd;
 			}
 		}
 		if (selected.length >= 2 || (selected.length === 1 && active.length > 0)) {

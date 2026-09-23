@@ -33,12 +33,13 @@ const execFileAsync = promisify(execFile);
 const system = { kind: "SYSTEM", id: "role-model-test" } as const;
 const readOnlyTools = ["read", "grep", "find", "ls"];
 const writerTools = ["read", "bash", "edit", "write", "grep", "find", "ls"];
-const names = { planner: "shared", explorer: "shared", implementer: "shared", reviewer: "shared" };
+const names = { planner: "shared", explorer: "shared", implementer: "shared", reviewer: "shared", verifier: "shared" };
 const profileRoles: Record<AgentRole, PiProfileRole> = {
 	planner: "PLAN",
 	explorer: "EXPLORE",
 	implementer: "IMPLEMENT",
 	reviewer: "REVIEW",
+	verifier: "VERIFY",
 };
 const mixedPolicy = {
 	provider: "default-provider",
@@ -49,6 +50,7 @@ const mixedPolicy = {
 		explorer: { model: "explorer-model", reasoning: "low" },
 		implementer: { provider: "writer-provider", model: "writer-model", reasoning: "xhigh" },
 		reviewer: { provider: "review-provider", model: "review-model", reasoning: "off" },
+		verifier: { provider: "verification-provider", model: "verification-model", reasoning: "high" },
 	},
 };
 

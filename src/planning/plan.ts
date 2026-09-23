@@ -1,12 +1,17 @@
 import { createHash, randomUUID } from "node:crypto";
-import { executionPolicyFor } from "../config/execution.ts";
+import { executionPolicyFor, remainingPlanningBudget } from "../config/execution.ts";
 import type { ProjectPaths } from "../config/paths.ts";
-import { acceptancePolicyForRun, type FrozenAcceptancePolicy, type ProjectConfig } from "../config/project.ts";
+import {
+	acceptancePolicyForRun,
+	type FrozenAcceptancePolicy,
+	type ProjectConfig,
+	taskAcceptanceForScope,
+} from "../config/project.ts";
 import type { ControlCatalog } from "../control/catalog.ts";
 import { type ContractObligation, parseObligations } from "../control/contract-types.ts";
 import type { ControlKernel } from "../control/kernel.ts";
 import type { LocalResourceGovernor } from "../control/resource-governor.ts";
-import type { CoordinationLevel } from "../domain/model.ts";
+import { type CoordinationLevel, DomainInvariantError } from "../domain/model.ts";
 import type { ExplorationReport, PiExplorer } from "../exploration/explorer.ts";
 import { AttemptControlBridge } from "../runtime/pi/control-bridge.ts";
 import {
@@ -17,7 +22,9 @@ import {
 } from "../runtime/pi/launcher.ts";
 import type { LiveAttemptRegistry } from "../runtime/pi/live-attempts.ts";
 import { runMetered } from "../runtime/pi/metered-run.ts";
+import { type BaselineReceipt, baselineReceipt } from "../verification/baseline.ts";
 import type { GitWorkspaceManager, ManagedWorktree } from "../workspace/git.ts";
+import { compileIncrements } from "./increments.ts";
 
 export interface PlannedTask {
 	key: string;
@@ -99,6 +106,14 @@ function extractJson(text: string): unknown {
 }
 
 export function parseTaskPlan(text: string): TaskPlan {
+	try {
+		return parseTaskPlanValue(text);
+	} catch (error) {
+		throw new DomainInvariantError("INVALID_PLANNING_OUTPUT", error instanceof Error ? error.message : String(error));
+	}
+}
+
+function parseTaskPlanValue(text: string): TaskPlan {
 	const value = extractJson(text);
 	if (!isRecord(value) || !Array.isArray(value.tasks) || !Array.isArray(value.dependencies)) {
 		throw new Error("Plan must contain tasks and dependencies arrays");
@@ -256,22 +271,20 @@ export function applyTaskPlan(input: {
 	sourceAttemptId: string;
 	kernel: ControlKernel;
 	acceptancePolicy: FrozenAcceptancePolicy;
+	baseline?: BaselineReceipt | null;
 	actor: { kind: "USER" | "SYSTEM"; id: string };
 }): Map<string, string> {
+	const compiled = compileIncrements(input.plan, input.acceptancePolicy, input.baseline);
 	const ids = input.kernel.acceptInitialTaskGraph({
 		runId: input.runId,
 		sourceAttemptId: input.sourceAttemptId,
-		tasks: input.plan.tasks.map((task) => ({
+		tasks: compiled.plan.tasks.map((task) => ({
 			key: task.key,
 			title: task.title,
 			objective: task.objective,
 			scope: task.scope,
 			constraints: task.constraints,
-			acceptanceContract: {
-				candidateChecks: input.acceptancePolicy.candidateChecks,
-				integrationChecks: input.acceptancePolicy.integrationChecks,
-				requireReview: input.acceptancePolicy.reviewRequiredFor.includes(task.riskClass),
-			},
+			acceptanceContract: taskAcceptanceForScope(input.acceptancePolicy, task.scope, task.riskClass),
 			riskClass: task.riskClass,
 			priority: task.priority,
 			coordination: {
@@ -282,9 +295,15 @@ export function applyTaskPlan(input: {
 				},
 			},
 		})),
-		dependencies: input.plan.dependencies,
+		dependencies: compiled.plan.dependencies,
 		actor: input.actor,
 	});
+	if (compiled.groups.length)
+		input.kernel.recordControlAction({
+			runId: input.runId,
+			kind: "PLANNING_COARSENED",
+			detail: { groups: compiled.groups, reasons: compiled.reasons },
+		});
 	return ids;
 }
 
@@ -320,26 +339,22 @@ Request exploration only when it is genuinely useful. You get one round with at 
         "uncertainty": "LOW|MEDIUM|HIGH",
         "rationale": "repository-grounded explanation for this classification",
         "evidenceRefs": ["repository-relative file or symbol"],
-        "explorationQuestions": [
-          { "key": "stable-question-key", "hypothesis": "falsifiable hypothesis", "question": "focused repository question" }
-        ]
+        "explorationQuestions": []
       },
       "interface": {
-        "provides": ["stable-interface-key"],
-        "obligations": [{"key":"stable-interface-key","artifactPaths":["src/interface.ts"],"checkNames":["an available frozen integration check name"]}],
-        "requires": ["capability or artifact required from an upstream task"],
-        "assumptions": ["explicit assumption that may become stale"],
-        "interfaces": ["API, schema, protocol, or shared semantic boundary"],
+        "provides": [],
+        "obligations": [],
+        "requires": [],
+        "assumptions": [],
+        "interfaces": [],
         "evidenceRefs": ["repository-relative file or symbol supporting the contract"]
       }
     }
   ],
-  "dependencies": [
-    { "task": "downstream-key", "dependsOn": "upstream-key", "kind": "REQUIRES" }
-  ]
+  "dependencies": []
 }
 
-Only list provides/assumptions that have an obligation with concrete artifactPaths and checkNames from the available frozen integration checks. Requirements must exactly match one producer provides key; existing repository facts belong in evidenceRefs. Use empty arrays when no cross-task interface is needed. A shared schema/type can be a prerequisite task whose verified artifact enables later independent implementation; choose this only when integration checks can verify the intermediate state.
+Only add a provides/assumptions key when it has an obligation shaped as {"key":"that-exact-key","artifactPaths":["a-real-artifact-path"],"checkNames":["an-available-frozen-integration-check-name"]}. Do not put prose assumptions in this list; ordinary repository facts and uncertainties belong in evidenceRefs, constraints and explorationQuestions. Requirements must exactly match one other producer provides key. Add dependency edges shaped as {"task":"downstream-key","dependsOn":"upstream-key","kind":"REQUIRES"} only between actual tasks. Keep empty arrays when no cross-task interface is needed. A shared schema/type can be a prerequisite task whose verified artifact enables later independent implementation; choose this only when integration checks can verify the intermediate state. Exploration questions, when needed, have key, hypothesis and question strings.
 
 Scopes are authoritative ownership boundaries, not hints. Use canonical repository-relative file or directory prefixes, include implementation, test, documentation, and configuration paths the task may need, and use ["."] only when a task must own the whole repository. Assess semantic coupling and integration/reverification cost independently from path overlap. Parallel-safe tasks need low sequentiality, low semantic coupling, bounded integration cost, and explicit provides/requires/assumptions. Use explorationQuestions only for genuine unresolved uncertainty. Use the smallest task graph that preserves isolated ownership and meaningful verification. Do not claim work is complete and do not edit files.`;
 }
@@ -370,6 +385,50 @@ export class PiPlanner {
 		private readonly liveAttempts?: LiveAttemptRegistry,
 	) {}
 
+	private initializeWholeGoal(input: { runId: string; objective: string }, reason?: string): TaskPlan {
+		const goal = this.catalog.getRun(input.runId).goalContract;
+		const acceptance = acceptancePolicyForRun(goal, this.config);
+		const scope = (goal as { authorizedScope?: string[] }).authorizedScope ?? ["."];
+		const task: PlannedTask = {
+			key: "goal",
+			title: input.objective.slice(0, 120),
+			objective: input.objective,
+			scope,
+			constraints: [],
+			riskClass: "NORMAL",
+			priority: 0,
+			coordination: {
+				decomposability: "LOW",
+				sequentiality: "HIGH",
+				semanticCoupling: "HIGH",
+				integrationCost: "LOW",
+				uncertainty: "MEDIUM",
+				rationale: reason ?? "Frozen single-agent baseline receives the full objective and repository context",
+				evidenceRefs: [],
+				explorationQuestions: [],
+			},
+			interface: { provides: [], requires: [], assumptions: [], interfaces: [], evidenceRefs: [], obligations: [] },
+		};
+		this.kernel.atomic(() => {
+			this.kernel.createTask({
+				runId: input.runId,
+				title: task.title,
+				objective: task.objective,
+				scope,
+				constraints: [],
+				riskClass: task.riskClass,
+				acceptanceContract: taskAcceptanceForScope(acceptance, scope, task.riskClass),
+				actor: { kind: "SYSTEM", id: "single-task-initializer" },
+			});
+			this.kernel.recordControlAction({
+				runId: input.runId,
+				kind: reason ? "PLANNING_FALLBACK" : "SINGLE_TASK_INITIALIZATION",
+				detail: { source: "frozen-user-objective", reason, planningUsage: this.catalog.planningUsage(input.runId) },
+			});
+		});
+		return { tasks: [task], dependencies: [] };
+	}
+
 	async plan(input: {
 		runId: string;
 		objective: string;
@@ -377,52 +436,13 @@ export class PiPlanner {
 		repositoryRoot: string;
 	}): Promise<TaskPlan> {
 		const goal = this.catalog.getRun(input.runId).goalContract;
-		if (executionPolicyFor(goal).policy === "SINGLE") {
-			const acceptance = acceptancePolicyForRun(goal, this.config);
-			const scope = (goal as { authorizedScope?: string[] }).authorizedScope ?? ["."];
-			const task: PlannedTask = {
-				key: "goal",
-				title: input.objective.slice(0, 120),
-				objective: input.objective,
-				scope,
-				constraints: [],
-				riskClass: "NORMAL",
-				priority: 0,
-				coordination: {
-					decomposability: "LOW",
-					sequentiality: "HIGH",
-					semanticCoupling: "HIGH",
-					integrationCost: "LOW",
-					uncertainty: "MEDIUM",
-					rationale: "Frozen single-agent baseline receives the full objective and repository context",
-					evidenceRefs: [],
-					explorationQuestions: [],
-				},
-				interface: { provides: [], requires: [], assumptions: [], interfaces: [], evidenceRefs: [], obligations: [] },
-			};
-			this.kernel.atomic(() => {
-				this.kernel.createTask({
-					runId: input.runId,
-					title: task.title,
-					objective: task.objective,
-					scope,
-					constraints: [],
-					riskClass: task.riskClass,
-					acceptanceContract: {
-						candidateChecks: acceptance.candidateChecks,
-						integrationChecks: acceptance.integrationChecks,
-						requireReview: acceptance.reviewRequiredFor.includes(task.riskClass),
-					},
-					actor: { kind: "SYSTEM", id: "single-task-initializer" },
-				});
-				this.kernel.recordControlAction({
-					runId: input.runId,
-					kind: "SINGLE_TASK_INITIALIZATION",
-					detail: { source: "frozen-user-objective", modelPlanningCalls: 0 },
-				});
-			});
-			return { tasks: [task], dependencies: [] };
-		}
+		if (executionPolicyFor(goal).policy === "SINGLE") return this.initializeWholeGoal(input);
+		const baseline = baselineReceipt(this.catalog, input.runId);
+		if (baseline?.checks.some((check) => check.state === "FAILED" && !check.scope))
+			return this.initializeWholeGoal(
+				input,
+				"A mandatory global integration gate fails on the input tree. Preserve the complete goal as one verifiable increment.",
+			);
 		return this.resources.run("INTERACTIVE", async () => {
 			const actor = { kind: "SYSTEM", id: "planner-service" } as const;
 			const acceptancePolicy = acceptancePolicyForRun(this.catalog.getRun(input.runId).goalContract, this.config);
@@ -457,8 +477,10 @@ export class PiPlanner {
 				const sessionId = "planner-" + attemptId;
 				const prompt =
 					plannerPrompt(input.objective) +
-					"\nFrozen available checks: " +
-					JSON.stringify(acceptancePolicy.integrationChecks);
+					"\nPlanning is a bounded allocation: inspect only the files needed to select a coarse task graph. If decomposition is uncertain, return one task covering the full goal. You do not need to solve implementation details during planning. You will receive a stop-investigating steer near your allocation limit.\nFrozen available checks: " +
+					JSON.stringify(acceptancePolicy.integrationChecks) +
+					"\nChecks without scope are mandatory for every increment. Scoped checks are selected by ownership; atomic checks coalesce all covered tasks. Whole-goal requirements belong to the frozen final gate. Baseline observations: " +
+					JSON.stringify(baseline);
 				executionId = this.kernel.createExecution({
 					attemptId,
 					piSessionId: sessionId,
@@ -492,6 +514,9 @@ export class PiPlanner {
 				unregister = this.liveAttempts?.register(attemptId, null, managed.worker);
 				const plannerWorker = managed.worker;
 				const runPlanner = async (text: string, phase: string) => {
+					const policy = executionPolicyFor(goal);
+					const spent = this.catalog.planningUsage(input.runId);
+					const allocation = remainingPlanningBudget(policy, spent);
 					const result = await runMetered(plannerWorker, {
 						kernel: this.kernel,
 						catalog: this.catalog,
@@ -499,6 +524,7 @@ export class PiPlanner {
 						attemptId,
 						executionId: executionId as string,
 						phase,
+						phaseBudget: allocation,
 						prompt: text,
 						timeoutMs: this.config.workerTimeoutMs,
 					});
@@ -563,6 +589,7 @@ export class PiPlanner {
 					sourceAttemptId: attemptId,
 					kernel: this.kernel,
 					acceptancePolicy,
+					baseline,
 					actor,
 				});
 				return plan;
@@ -583,6 +610,15 @@ export class PiPlanner {
 					});
 				} catch {
 					// The attempt may already be durably submitted with its task graph.
+				}
+				if (
+					error instanceof DomainInvariantError &&
+					["PHASE_BUDGET_EXHAUSTED", "INVALID_PLANNING_OUTPUT"].includes(error.code) &&
+					!this.kernel.computeSnapshot(input.runId).unavailableReason &&
+					this.catalog.listTasks(input.runId).length === 0 &&
+					this.catalog.listOpenDecisionRequests(input.runId).length === 0
+				) {
+					return this.initializeWholeGoal(input, error.message);
 				}
 				throw error;
 			} finally {

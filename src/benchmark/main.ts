@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 import { LocalOrchestrator } from "../app/orchestrator.ts";
 import { loadProjectConfig } from "../config/project.ts";
+import { compareFeatureBench, type ExperimentResults } from "./comparison.ts";
 import { importFeatureBenchVerdicts } from "./evaluator.ts";
 import { collectFeatureBench, exportFeatureBench, parseFeatureBenchTask } from "./featurebench.ts";
 import { freezeManifest, hashJson, readFrozenManifest, writeImmutableJson } from "./manifest.ts";
@@ -22,6 +23,7 @@ const HELP = `TripleTeam benchmark adapter (model execution is explicit)
   milestone-step REPOSITORY TASK_QUEUE_MD FROZEN_MANIFEST OUTPUT_DIRECTORY
   milestone-watch REPOSITORY TASK_QUEUE_MD FROZEN_MANIFEST OUTPUT_DIRECTORY
   summarize FROZEN_MANIFEST OUTPUT_DIRECTORY [EXTERNAL_VERDICTS_JSON]
+  compare-featurebench LEFT_MANIFEST LEFT_OUTPUT LEFT_VERDICTS RIGHT_MANIFEST RIGHT_OUTPUT RIGHT_VERDICTS
 
 Only featurebench-run / milestone-step / milestone-watch may call models.
 SWE-Milestone queue unlock and hidden evaluation remain in the official harness.
@@ -37,6 +39,19 @@ async function json(path: string): Promise<unknown> {
 	return JSON.parse(await readFile(path, "utf8"));
 }
 
+async function readExperiment(manifest: string, directory: string, verdictFile?: string): Promise<ExperimentResults> {
+	const frozen = await readFrozenManifest(manifest);
+	const trials: BenchmarkTrial[] = [];
+	for (const id of frozen.manifest.instanceIds) {
+		try {
+			trials.push((await json(join(directory, id, "trial.json"))) as BenchmarkTrial);
+		} catch (error) {
+			if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+		}
+	}
+	return { frozen, trials, verdicts: verdictFile ? ((await json(verdictFile)) as ExternalVerdict[]) : [] };
+}
+
 async function main(args: string[]): Promise<void> {
 	const command = args[0];
 	if (!command || command === "--help" || command === "help") {
@@ -46,7 +61,17 @@ async function main(args: string[]): Promise<void> {
 	if (command === "config-hash") {
 		const config = await loadProjectConfig(arg(args, 1));
 		const execution = JSON.parse(JSON.stringify(config.execution));
-		process.stdout.write(JSON.stringify({ execution, executionConfigHash: hashJson(execution) }, null, 2) + "\n");
+		process.stdout.write(
+			JSON.stringify(
+				{
+					execution,
+					executionConfigHash: hashJson(execution),
+					runtimeConfigHash: hashJson(JSON.parse(JSON.stringify(config))),
+				},
+				null,
+				2,
+			) + "\n",
+		);
 		return;
 	}
 	if (command === "freeze") {
@@ -77,18 +102,14 @@ async function main(args: string[]): Promise<void> {
 		return;
 	}
 	if (command === "summarize") {
-		const frozen = await readFrozenManifest(arg(args, 1));
-		const directory = arg(args, 2);
-		const trials: BenchmarkTrial[] = [];
-		for (const id of frozen.manifest.instanceIds) {
-			try {
-				trials.push((await json(join(directory, id, "trial.json"))) as BenchmarkTrial);
-			} catch (error) {
-				if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-			}
-		}
-		const verdicts = args[3] ? ((await json(args[3])) as ExternalVerdict[]) : [];
+		const { frozen, trials, verdicts } = await readExperiment(arg(args, 1), arg(args, 2), args[3]);
 		process.stdout.write(JSON.stringify(summarizeTrials(frozen, trials, verdicts), null, 2) + "\n");
+		return;
+	}
+	if (command === "compare-featurebench") {
+		const left = await readExperiment(arg(args, 1), arg(args, 2), arg(args, 3));
+		const right = await readExperiment(arg(args, 4), arg(args, 5), arg(args, 6));
+		process.stdout.write(JSON.stringify(compareFeatureBench(left, right), null, 2) + "\n");
 		return;
 	}
 	if (!["featurebench-run", "featurebench-export", "milestone-step", "milestone-watch"].includes(command)) {

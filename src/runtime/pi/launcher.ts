@@ -1,11 +1,17 @@
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { getAgentDir, ProjectTrustStore, type RpcSessionState } from "@earendil-works/pi-coding-agent";
+import {
+	getAgentDir,
+	ProjectTrustStore,
+	type RpcEventListener,
+	type RpcSessionState,
+} from "@earendil-works/pi-coding-agent";
 import { type AgentRole, type ExecutionPolicy, modelSelectionFor } from "../../config/execution.ts";
 import { DomainInvariantError } from "../../domain/model.ts";
 import { CONTROL_TOOL_NAMES, controlExtensionPath, type PiControlEndpoint } from "./control-bridge.ts";
 import { PiRpcWorker, type PiRunResult, type PiUsage, type PiWorkerConfig } from "./rpc-worker.ts";
+import { checkPiSearchTools } from "./tool-preflight.ts";
 import { discoverPiAgents, PersistentSessionGuard } from "./upstream.ts";
 
 export interface PiWorkerRequest {
@@ -25,6 +31,7 @@ export interface ManagedPiWorker {
 }
 
 export interface PiWorkerController {
+	onEvent?(listener: RpcEventListener): () => void;
 	onUsage?(listener: (usage: PiUsage) => void): () => void;
 	usageSnapshot?(): PiUsage;
 	start(): Promise<RpcSessionState>;
@@ -55,7 +62,7 @@ export interface PiProfileSummary {
 	source: ResolvedPiProfile["source"];
 }
 
-export type PiProfileRole = "PLAN" | "EXPLORE" | "IMPLEMENT" | "REVIEW";
+export type PiProfileRole = "PLAN" | "EXPLORE" | "IMPLEMENT" | "REVIEW" | "VERIFY";
 export type FrozenPiProfiles = Record<PiProfileRole, { name: string; version: string }>;
 
 const READ_ONLY_PROFILE_TOOLS = ["read", "grep", "find", "ls"];
@@ -65,7 +72,7 @@ const WRITER_PROFILE_TOOLS = ["read", "bash", "edit", "write", "grep", "find", "
 export function freezePiProfiles(
 	launcher: PiWorkerLauncher,
 	cwd: string,
-	names: { planner: string; explorer: string; implementer: string; reviewer: string },
+	names: { planner: string; explorer: string; implementer: string; reviewer: string; verifier?: string },
 	execution: ExecutionPolicy,
 ): FrozenPiProfiles {
 	const resolve = (name: string, readOnly: boolean, role: AgentRole) => {
@@ -84,6 +91,7 @@ export function freezePiProfiles(
 		EXPLORE: resolve(names.explorer, true, "explorer"),
 		IMPLEMENT: resolve(names.implementer, false, "implementer"),
 		REVIEW: resolve(names.reviewer, true, "reviewer"),
+		VERIFY: resolve(names.verifier ?? "verifier", true, "verifier"),
 	};
 }
 
@@ -109,6 +117,12 @@ interface BuiltinProfile {
 // scout/planner/worker/reviewer. Names here follow this product's vocabulary;
 // user- or trusted project-level Pi definitions can override every one.
 const BUILTIN_PROFILES: Readonly<Record<string, BuiltinProfile>> = Object.freeze({
+	verifier: {
+		description: "Independent specification discovery and executable counterexample design",
+		tools: ["read", "grep", "find", "ls"],
+		systemPrompt:
+			"Work read-only from the public goal and repository evidence. Derive behavior obligations and design executable discriminating tests. Cite exact source quotations. Distinguish explicit requirements from unresolved assumptions. You cannot change acceptance criteria or declare delivery.",
+	},
 	explorer: {
 		description: "Read-only repository reconnaissance and evidence-backed handoff",
 		tools: ["read", "grep", "find", "ls"],
@@ -204,6 +218,7 @@ export class PiWorkerLauncher {
 	async create(request: PiWorkerRequest, resolved?: ResolvedPiProfile): Promise<ManagedPiWorker> {
 		const profile = resolved ?? this.resolveProfile(request.cwd, request.profileName, request.defaultTools);
 		if (profile.name !== request.profileName) throw new Error("Resolved Pi profile does not match the worker request");
+		await checkPiSearchTools(profile.tools);
 		let systemPromptFile: string | undefined;
 		if (profile.systemPrompt.trim()) {
 			const promptDirectory = join(request.sessionDirectory, "system-prompts");
@@ -230,7 +245,7 @@ export class PiWorkerLauncher {
 				sessionName: request.sessionName,
 				systemPromptFile,
 				disableExtensionDiscovery: true,
-				extensionPaths: request.control ? [controlExtensionPath()] : undefined,
+				extensionPaths: [controlExtensionPath()],
 				tools,
 				model: profile.model,
 				provider: profile.provider,

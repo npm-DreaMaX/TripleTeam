@@ -1,7 +1,14 @@
 import { createHash, randomUUID } from "node:crypto";
 import type { SqliteDatabase } from "@earendil-works/pi-session-backend-sqlite-node";
 import { executionPolicyFor } from "../config/execution.ts";
-import { type CheckCommand, checkCommandVersion, evidenceClassForCheck } from "../config/project.ts";
+import {
+	type CheckCommand,
+	checkCommandVersion,
+	evidenceClassForCheck,
+	type FrozenAcceptancePolicy,
+	parseCheckCommand,
+	taskAcceptanceForScope,
+} from "../config/project.ts";
 import {
 	type AttemptSnapshot,
 	type CandidateIdentity,
@@ -19,6 +26,7 @@ import {
 	assertTaskTransition,
 } from "../domain/transitions.ts";
 import type { ControlDatabase } from "../store/database.ts";
+import { AssuranceLedger } from "./assurance-ledger.ts";
 import { type ContractObligation, parseObligations } from "./contract-types.ts";
 import { normalizeTaskScope } from "./scope.ts";
 
@@ -209,6 +217,14 @@ function assertStringArray(value: unknown, field: string): asserts value is stri
 }
 
 function validateCheckCommand(value: unknown, field: string): void {
+	try {
+		parseCheckCommand(value, field);
+	} catch (error) {
+		throw new DomainInvariantError(
+			"INVALID_ACCEPTANCE_CONTRACT",
+			error instanceof Error ? error.message : String(error),
+		);
+	}
 	if (!isRecord(value) || typeof value.name !== "string" || value.name.trim() === "") {
 		throw new DomainInvariantError("INVALID_ACCEPTANCE_CONTRACT", field + " must be a named check object");
 	}
@@ -229,6 +245,30 @@ function validateCheckCommand(value: unknown, field: string): void {
 	if (value.lane !== "LIGHT_CHECK" && value.lane !== "HEAVY_CHECK") {
 		throw new DomainInvariantError("INVALID_ACCEPTANCE_CONTRACT", field + ".lane is invalid");
 	}
+}
+
+function assertFrozenTaskPolicy(
+	value: unknown,
+	task: Pick<TaskGraphTaskInput, "scope" | "riskClass" | "acceptanceContract">,
+): void {
+	const goal = value as { verificationPolicyVersion?: number; taskAcceptancePolicy?: FrozenAcceptancePolicy };
+	if (goal.verificationPolicyVersion !== 1) return;
+	if (!goal.taskAcceptancePolicy)
+		throw new DomainInvariantError("INVALID_ACCEPTANCE_CONTRACT", "Frozen task policy is absent");
+	const required = taskAcceptanceForScope(goal.taskAcceptancePolicy, task.scope as string[], task.riskClass);
+	const supplied = task.acceptanceContract as typeof required;
+	for (const phase of ["candidateChecks", "integrationChecks"] as const) {
+		const checks = supplied[phase];
+		if (new Set(checks.map((check) => check.name)).size !== checks.length)
+			throw new DomainInvariantError("INVALID_ACCEPTANCE_CONTRACT", "Duplicate check names");
+		for (const check of required[phase])
+			if (
+				!checks.some((value) => value.name === check.name && checkCommandVersion(value) === checkCommandVersion(check))
+			)
+				throw new DomainInvariantError("FROZEN_CHECK_OMITTED", `Task must retain ${phase} obligation ${check.name}`);
+	}
+	if (required.requireReview && !supplied.requireReview)
+		throw new DomainInvariantError("FROZEN_REVIEW_OMITTED", "Task must retain the frozen review gate");
 }
 
 function validateAcceptanceContract(value: unknown): void {
@@ -427,9 +467,11 @@ function attemptSnapshot(row: AttemptRow): AttemptSnapshot {
 
 export class ControlKernel {
 	private readonly db: SqliteDatabase;
+	readonly assurance: AssuranceLedger;
 
 	constructor(database: ControlDatabase) {
 		this.db = database.sql;
+		this.assurance = new AssuranceLedger(this.db);
 	}
 
 	private transactionDepth = 0;
@@ -517,6 +559,7 @@ export class ControlKernel {
 		executions: number;
 		remainingMs: number | null;
 		unavailableReason: string | null;
+		providerUnavailableReason?: string;
 	} {
 		const policy = executionPolicyFor(this.goalContract(runId));
 		const usage = this.db
@@ -539,8 +582,16 @@ export class ControlKernel {
 			policy.deadlineMs === undefined
 				? null
 				: Math.max(0, Date.parse(started.created_at) + policy.deadlineMs - Date.now());
+		const providerState = this.db
+			.prepare(
+				"SELECT kind,detail_json FROM control_actions WHERE run_id=? AND kind IN ('PROVIDER_UNAVAILABLE','PROVIDER_RECOVERY_REQUESTED') ORDER BY rowid DESC LIMIT 1",
+			)
+			.get<{ kind: string; detail_json: string }>(runId);
+		const providerReason =
+			providerState?.kind === "PROVIDER_UNAVAILABLE" ? String(JSON.parse(providerState.detail_json).reason) : null;
 		const unavailableReason =
-			remainingMs === 0
+			providerReason ??
+			(remainingMs === 0
 				? "Run deadline exhausted"
 				: policy.costLimitUsd !== undefined && usage.cost + reserved.cost >= policy.costLimitUsd
 					? "Run cost budget exhausted or reserved"
@@ -548,8 +599,9 @@ export class ControlKernel {
 						? "Run token budget exhausted or reserved"
 						: executions >= policy.maxExecutions
 							? "Run execution limit reached"
-							: null;
+							: null);
 		return {
+			...(providerReason ? { providerUnavailableReason: providerReason } : {}),
 			costUsd: usage.cost,
 			tokens: usage.tokens,
 			reservedUsd: reserved.cost,
@@ -560,23 +612,36 @@ export class ControlKernel {
 		};
 	}
 
-	reserveCompute(input: { id: string; runId: string; executionId: string }): void {
+	reserveCompute(input: {
+		id: string;
+		runId: string;
+		executionId: string;
+		tokenReservationCap?: number;
+		costReservationCap?: number;
+	}): void {
+		for (const cap of [input.tokenReservationCap, input.costReservationCap])
+			if (cap !== undefined && (!Number.isFinite(cap) || cap <= 0))
+				throw new Error("Compute reservation cap must be positive and finite");
 		this.atomic(() => {
 			this.assertRunOpen(this.requireRun(input.runId));
 			if (this.requireExecution(input.executionId).run_id !== input.runId)
 				throw new DomainInvariantError("CROSS_RUN_BUDGET", "Execution belongs to another run");
 			const policy = executionPolicyFor(this.goalContract(input.runId));
 			const snapshot = this.computeSnapshot(input.runId);
+			if (snapshot.providerUnavailableReason)
+				throw new DomainInvariantError("PROVIDER_UNAVAILABLE", snapshot.providerUnavailableReason);
 			if (snapshot.remainingMs === 0 || snapshot.executions > policy.maxExecutions)
 				throw new DomainInvariantError("BUDGET_EXHAUSTED", "Execution/deadline budget exhausted");
+			const requestedCost = Math.min(policy.reservationUsd, input.costReservationCap ?? Infinity);
+			const requestedTokens = Math.min(policy.reservationTokens, input.tokenReservationCap ?? Infinity);
 			const cost =
 				policy.costLimitUsd === undefined
-					? policy.reservationUsd
-					: Math.min(policy.reservationUsd, policy.costLimitUsd - snapshot.costUsd - snapshot.reservedUsd);
+					? requestedCost
+					: Math.min(requestedCost, policy.costLimitUsd - snapshot.costUsd - snapshot.reservedUsd);
 			const tokens =
 				policy.tokenLimit === undefined
-					? policy.reservationTokens
-					: Math.min(policy.reservationTokens, policy.tokenLimit - snapshot.tokens - snapshot.reservedTokens);
+					? requestedTokens
+					: Math.min(requestedTokens, policy.tokenLimit - snapshot.tokens - snapshot.reservedTokens);
 			if (cost <= 0 || tokens < 1)
 				throw new DomainInvariantError(
 					"BUDGET_EXHAUSTED",
@@ -620,6 +685,8 @@ export class ControlKernel {
 			const snapshot = this.computeSnapshot(row.run_id);
 			return { policy, snapshot };
 		});
+		if (snapshot.providerUnavailableReason)
+			throw new DomainInvariantError("PROVIDER_UNAVAILABLE", snapshot.providerUnavailableReason);
 		if (
 			snapshot.remainingMs === 0 ||
 			(policy.costLimitUsd !== undefined && snapshot.costUsd >= policy.costLimitUsd) ||
@@ -1787,6 +1854,7 @@ ON CONFLICT(attempt_id, pi_session_id) DO UPDATE SET
 		const timestamp = now();
 		this.atomic(() => {
 			this.assertRunOpen(this.requireRun(input.runId));
+			assertFrozenTaskPolicy(this.goalContract(input.runId), input);
 			this.db
 				.prepare(
 					"INSERT INTO tasks (id, run_id, parent_task_id, state, priority, risk_class, required_capabilities_json, created_at, updated_at) VALUES (?, ?, ?, 'PROPOSED', ?, ?, ?, ?, ?)",
@@ -1878,6 +1946,7 @@ ON CONFLICT(attempt_id, pi_session_id) DO UPDATE SET
 		const timestamp = now();
 		return this.atomic(() => {
 			this.assertRunOpen(this.requireRun(input.runId));
+			for (const task of input.tasks) assertFrozenTaskPolicy(this.goalContract(input.runId), task);
 			const source = this.requireAttempt(input.sourceAttemptId);
 			if (source.run_id !== input.runId || source.workflow_function !== "PLAN" || source.state !== "SUBMITTED") {
 				throw new DomainInvariantError(
@@ -2099,6 +2168,8 @@ assumptions_json, owned_scope_json, interfaces_json, evidence_refs_json, created
 			if (actor.kind === "USER") this.assertHumanInputAllowed(run.id);
 			const changes = JSON.parse(proposal.proposal_json) as TaskChangeSet;
 			validateTaskChangeSet(changes);
+			for (const task of [...changes.additions, ...changes.revisions])
+				assertFrozenTaskPolicy(this.goalContract(run.id), task);
 			const timestamp = now();
 			const addedIds = new Map<string, string>();
 			for (const addition of changes.additions) addedIds.set(addition.key, randomUUID());
@@ -2698,6 +2769,7 @@ assumptions_json, owned_scope_json, interfaces_json, evidence_refs_json, created
 				candidate.id,
 				candidate.tree_hash,
 			);
+			this.assurance.assertPassed(task.id, candidate.tree_hash, "CANDIDATE", candidate.id);
 			this.db
 				.prepare("UPDATE candidates SET state = 'ELIGIBLE', updated_at = ? WHERE id = ? AND state = 'SUBMITTED'")
 				.run(now(), candidate.id);
@@ -2878,7 +2950,7 @@ assumptions_json, owned_scope_json, interfaces_json, evidence_refs_json, created
 		});
 	}
 
-	assertIntegrationPublishable(integrationId: string): void {
+	assertIntegrationPublishable(integrationId: string, treeHash?: string): void {
 		this.atomic(() => {
 			const integration = this.requireIntegration(integrationId);
 			if (integration.state !== "APPLYING") {
@@ -2893,7 +2965,15 @@ assumptions_json, owned_scope_json, interfaces_json, evidence_refs_json, created
 			if (run.integration_head !== integration.expected_head) {
 				throw new DomainInvariantError("STALE_INTEGRATION_HEAD", "Integration head changed before publication");
 			}
+			this.requireIntegrationAssurance(integration.run_id, task.id, treeHash ?? "", integration.id);
 		});
+	}
+
+	private requireIntegrationAssurance(runId: string, taskId: string, treeHash: string, integrationId: string): void {
+		for (const task of this.db
+			.prepare("SELECT id FROM tasks WHERE run_id=? AND (state='ACCEPTED' OR id=?)")
+			.all<{ id: string }>(runId, taskId))
+			this.assurance.assertPassed(task.id, treeHash, "INTEGRATION", integrationId);
 	}
 
 	failIntegration(input: {
@@ -2956,6 +3036,7 @@ assumptions_json, owned_scope_json, interfaces_json, evidence_refs_json, created
 				this.requireCandidate(integration.candidate_id).attempt_id,
 				input.resultTreeHash,
 			);
+			this.requireIntegrationAssurance(integration.run_id, task.id, input.resultTreeHash, integration.id);
 			const timestamp = now();
 			const runUpdate = this.db
 				.prepare(
@@ -3000,6 +3081,7 @@ assumptions_json, owned_scope_json, interfaces_json, evidence_refs_json, created
 			}
 			const candidate = this.requireCandidate(integration.candidate_id);
 			this.requireCoordinationEvidence(task.id, candidate.attempt_id, integration.result_tree_hash);
+			this.assurance.assertPassed(task.id, integration.result_tree_hash, "INTEGRATION", integration.id);
 			const contract = this.requireAcceptanceContract(task.id);
 			const checkIds = this.requireContractChecks(
 				contract.integrationChecks,
@@ -3119,6 +3201,10 @@ assumptions_json, owned_scope_json, interfaces_json, evidence_refs_json, created
 				runChecks.length > 0
 					? this.requireContractChecks(runChecks, "RUN", run.id, input.treeHash)
 					: this.requireAnyPassedChecks("RUN", run.id, input.treeHash);
+			for (const task of this.db
+				.prepare("SELECT id FROM tasks WHERE run_id=? AND state='ACCEPTED'")
+				.all<{ id: string }>(run.id))
+				this.assurance.assertPassed(task.id, input.treeHash, "RUN", run.id);
 			const timestamp = now();
 			const update = this.db
 				.prepare(
@@ -3176,6 +3262,11 @@ assumptions_json, owned_scope_json, interfaces_json, evidence_refs_json, created
 				)
 				.run(now(), run.id, run.version);
 			if (update.changes !== 1) throw new DomainInvariantError("CONCURRENT_RUN_UPDATE", "Run changed during resume");
+			this.recordControlAction({
+				runId,
+				kind: "PROVIDER_RECOVERY_REQUESTED",
+				detail: { reason: "Explicit continuation permits a new provider attempt; frozen budgets are unchanged" },
+			});
 			this.event({
 				runId,
 				aggregateType: "RUN",

@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { CheckCommand } from "../../config/project.ts";
+import { type CheckCommand, taskAcceptanceForScope } from "../../config/project.ts";
 import type { ControlCatalog } from "../../control/catalog.ts";
 import { currentExplorationMessages } from "../../control/exploration-policy.ts";
 import type {
@@ -289,11 +289,11 @@ export class AttemptControlBridge {
 					if (task.riskClass !== "LOW" && task.riskClass !== "NORMAL" && task.riskClass !== "HIGH") {
 						throw new Error(`Task proposal ${field} entry has an invalid riskClass`);
 					}
-					task.acceptanceContract = {
-						candidateChecks: this.proposalDefaults.candidateChecks,
-						integrationChecks: this.proposalDefaults.integrationChecks,
-						requireReview: this.proposalDefaults.reviewRequiredFor.includes(task.riskClass),
-					};
+					task.acceptanceContract = taskAcceptanceForScope(
+						this.proposalDefaults,
+						task.scope as string[],
+						task.riskClass,
+					);
 				}
 			}
 			const id = this.kernel.proposeTaskChanges({

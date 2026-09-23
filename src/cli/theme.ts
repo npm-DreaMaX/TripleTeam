@@ -1,15 +1,15 @@
 import { stripTerminalSequences, truncateToWidth, visibleWidth, wrapTextWithAnsi } from "@earendil-works/pi-tui";
 
 export const PALETTE = {
-	background: "#0b1218",
-	surface: "#121e27",
-	border: "#304451",
-	text: "#edf5f4",
-	muted: "#a1b5bf",
-	accent: "#59e3bb",
-	blue: "#86b9ff",
-	warning: "#f1cd7b",
-	error: "#ff9292",
+	background: "#171819",
+	surface: "#222426",
+	border: "#45494d",
+	text: "#eceeed",
+	muted: "#a9aeaf",
+	accent: "#b5cba5",
+	blue: "#eceeed",
+	warning: "#eceeed",
+	error: "#e6a09a",
 } as const;
 
 export type Tone = keyof typeof PALETTE;

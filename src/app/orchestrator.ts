@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 import { type ExecutionPolicy, parseExecutionPolicy } from "../config/execution.ts";
 import { type ProjectPaths, projectPaths } from "../config/paths.ts";
-import { loadProjectConfig, type ProjectConfig } from "../config/project.ts";
+import { loadProjectConfig, type ProjectConfig, parseProjectConfig } from "../config/project.ts";
 import { ControlCatalog } from "../control/catalog.ts";
 import { AdaptiveCoordinationPolicy } from "../control/coordination-policy.ts";
 import { ControlKernel } from "../control/kernel.ts";
@@ -20,6 +20,8 @@ import { freezePiProfiles, PiWorkerLauncher } from "../runtime/pi/launcher.ts";
 import { LiveAttemptRegistry } from "../runtime/pi/live-attempts.ts";
 import { PersistentSessionGuard } from "../runtime/pi/upstream.ts";
 import { type ControlDatabase, openControlDatabase } from "../store/database.ts";
+import { AssuranceService } from "../verification/assurance-service.ts";
+import { BaselineVerifier } from "../verification/baseline.ts";
 import { CheckRunner } from "../verification/check-runner.ts";
 import { RunVerifier } from "../verification/run-verifier.ts";
 import { GitWorkspaceManager, type RepositorySnapshot, resolveRepositoryRoot } from "../workspace/git.ts";
@@ -63,6 +65,7 @@ export class LocalOrchestrator {
 	private readonly reporter: DeliveryReporter;
 	private readonly liveAttempts: LiveAttemptRegistry;
 	private readonly controlGuard: PersistentSessionGuard;
+	private executing = false;
 
 	private constructor(input: {
 		repositoryRoot: string;
@@ -122,7 +125,18 @@ export class LocalOrchestrator {
 			const launcher = new PiWorkerLauncher();
 			const liveAttempts = new LiveAttemptRegistry();
 			const checks = new CheckRunner(resources);
-			const finalVerifier = new RunVerifier(kernel, catalog, workspaces, checks, paths, config);
+			const assurance = new AssuranceService({
+				kernel,
+				catalog,
+				workspaces,
+				launcher,
+				checks,
+				resources,
+				paths,
+				config,
+				liveAttempts,
+			});
+			const finalVerifier = new RunVerifier(kernel, catalog, workspaces, checks, paths, config, assurance);
 			const reviewer = new PiReviewer(kernel, catalog, workspaces, launcher, resources, paths, config, liveAttempts);
 			const explorer = new PiExplorer(kernel, catalog, workspaces, launcher, resources, paths, config, liveAttempts);
 			const executor = new TaskExecutor(
@@ -189,7 +203,8 @@ export class LocalOrchestrator {
 	}
 
 	async initialize(objective = "", options: InitializeOptions = {}): Promise<InitializedRun> {
-		const executionPolicy = parseExecutionPolicy(this.config.execution);
+		const configuration = await loadProjectConfig(this.repositoryRoot);
+		const executionPolicy = parseExecutionPolicy(configuration.execution);
 		for (const key of ["costLimitUsd", "tokenLimit", "deadlineMs", "maxExecutions"] as const) {
 			const requested = options.budget?.[key];
 			if (requested !== undefined) executionPolicy[key] = Math.min(executionPolicy[key] ?? requested, requested);
@@ -198,7 +213,7 @@ export class LocalOrchestrator {
 		const piProfiles = freezePiProfiles(
 			new PiWorkerLauncher(),
 			this.repositoryRoot,
-			this.config.profiles,
+			configuration.profiles,
 			executionPolicy,
 		);
 		const runId = randomUUID();
@@ -220,22 +235,26 @@ export class LocalOrchestrator {
 			integrationRef,
 			goalContract: {
 				schema: "goal-contract/v3",
+				verificationPolicyVersion: 1,
+				baselinePolicy: configuration.baseline,
+				assurancePolicy: configuration.assurance ?? { mode: "off" },
 				executionPolicy,
-				runtimeConfigurationHash: createHash("sha256").update(JSON.stringify(this.config)).digest("hex"),
+				runtimeConfiguration: configuration,
+				runtimeConfigurationHash: createHash("sha256").update(JSON.stringify(configuration)).digest("hex"),
 				piProfiles,
 				authorizedScope: ["."],
 				objective,
 				inputCommit: snapshot.commitHash,
-				runChecks: this.config.runChecks,
+				runChecks: configuration.runChecks,
 				taskAcceptancePolicy: {
-					candidateChecks: this.config.candidateChecks,
-					integrationChecks: this.config.integrationChecks,
-					reviewRequiredFor: this.config.reviewRequiredFor,
+					candidateChecks: configuration.candidateChecks,
+					integrationChecks: configuration.integrationChecks,
+					reviewRequiredFor: configuration.reviewRequiredFor,
 				},
 				coordinationPolicy: {
 					modes: ["SINGLE", "PARALLEL_TASKS", "SERIALIZE", "DIVERSE_EXPLORATION"],
-					maxDiverseExplorations: this.config.maxDiverseExplorations ?? 2,
-					maxRepeatedFailureFingerprints: this.config.maxRepeatedFailureFingerprints ?? 2,
+					maxDiverseExplorations: configuration.maxDiverseExplorations ?? 2,
+					maxRepeatedFailureFingerprints: configuration.maxRepeatedFailureFingerprints ?? 2,
 					parallelismRequiresExplicitSemanticIndependence: true,
 				},
 				completionInvariants: [
@@ -251,32 +270,37 @@ export class LocalOrchestrator {
 	}
 
 	async run(objective: string, options: InitializeOptions = {}): Promise<RunResult> {
-		if (!objective.trim()) throw new Error("A non-empty coding objective is required");
-		const initialized = await this.initialize(objective, options);
-		await this.planOrBlock({
-			runId: initialized.runId,
-			objective,
-			inputCommit: initialized.inputCommit,
-			repositoryRoot: initialized.repositoryRoot,
+		return this.withExecution(async () => {
+			if (!objective.trim()) throw new Error("A non-empty coding objective is required");
+			const initialized = await this.initialize(objective, options);
+			await this.restoreRunConfiguration(initialized.runId);
+			await this.planOrBlock({
+				runId: initialized.runId,
+				objective,
+				inputCommit: initialized.inputCommit,
+				repositoryRoot: initialized.repositoryRoot,
+			});
+			const result = await this.scheduler.runUntilSettled(initialized.runId);
+			const delivery = await this.reporter.ensure(initialized.runId);
+			return { ...initialized, state: result.state, integrationHead: result.integrationHead, delivery };
 		});
-		const result = await this.scheduler.runUntilSettled(initialized.runId);
-		const delivery = await this.reporter.ensure(initialized.runId);
-		return { ...initialized, state: result.state, integrationHead: result.integrationHead, delivery };
 	}
 
 	async continue(
 		runId?: string,
 	): Promise<{ result: SchedulerResult; reconciliation: ReconciliationReport; delivery: DeliveryReport }> {
+		return this.withExecution(() => this.continueRun(runId));
+	}
+
+	private async continueRun(
+		runId?: string,
+	): Promise<{ result: SchedulerResult; reconciliation: ReconciliationReport; delivery: DeliveryReport }> {
 		const run = runId ? this.catalog.getRun(runId) : this.catalog.latestRun();
 		if (!run) throw new Error("No run exists for this repository");
-		const frozenConfig = (run.goalContract as { runtimeConfigurationHash?: string }).runtimeConfigurationHash;
-		if (frozenConfig && frozenConfig !== createHash("sha256").update(JSON.stringify(this.config)).digest("hex"))
-			throw new Error(
-				"Repository runtime configuration changed after run initialization; restore the frozen configuration or start a new run",
-			);
 		if (run.state === "COMPLETED" || run.state === "CANCELLED") {
 			throw new Error(`Run ${run.id} is terminal (${run.state}) and cannot be continued`);
 		}
+		await this.restoreRunConfiguration(run.id);
 		if (run.state === "BLOCKED") {
 			const blockedTasks = this.catalog.listTasks(run.id, ["BLOCKED"]);
 			const pendingProposals = this.catalog.listTaskChangeProposals(run.id, ["PROPOSED"]);
@@ -311,6 +335,7 @@ export class LocalOrchestrator {
 	}
 
 	async retry(taskId: string): Promise<{ result: SchedulerResult; reconciliation: ReconciliationReport }> {
+		this.assertIdle();
 		const task = this.catalog.getTask(taskId);
 		const run = this.catalog.getRun(task.runId);
 		this.kernel.retryBlockedTask(taskId, { kind: "USER", id: "local-user" });
@@ -476,22 +501,72 @@ export class LocalOrchestrator {
 		}
 	}
 
-	private async planOrBlock(input: Parameters<PiPlanner["plan"]>[0]): Promise<void> {
+	private assertIdle(): void {
+		if (this.executing) throw new Error("A run is already executing in this workspace; wait or cancel it first");
+	}
+
+	private async withExecution<T>(work: () => Promise<T>): Promise<T> {
+		this.assertIdle();
+		this.executing = true;
 		try {
+			return await work();
+		} finally {
+			this.executing = false;
+		}
+	}
+
+	private async restoreRunConfiguration(runId: string): Promise<void> {
+		const goal = this.catalog.getRun(runId).goalContract as {
+			runtimeConfiguration?: unknown;
+			runtimeConfigurationHash?: string;
+		};
+		const hash = (value: unknown) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+		let selected: ProjectConfig;
+		if (goal.runtimeConfiguration !== undefined) {
+			if (!goal.runtimeConfigurationHash || hash(goal.runtimeConfiguration) !== goal.runtimeConfigurationHash)
+				throw new Error("Frozen runtime configuration does not match its recorded hash");
+			selected = parseProjectConfig(goal.runtimeConfiguration, []);
+		} else {
+			selected = await loadProjectConfig(this.repositoryRoot);
+			if (goal.runtimeConfigurationHash && hash(selected) !== goal.runtimeConfigurationHash)
+				throw new Error(
+					"This legacy run stores only a configuration hash; restore its original configuration before continuing",
+				);
+		}
+		// Services hold this shared configuration object. Change it only before exclusive run execution.
+		Object.assign(this.config, selected);
+	}
+
+	private async planOrBlock(input: Parameters<PiPlanner["plan"]>[0]): Promise<void> {
+		let phase: "BASELINE" | "PLANNING" = "BASELINE";
+		try {
+			await new BaselineVerifier(
+				this.kernel,
+				this.catalog,
+				this.workspaces,
+				new CheckRunner(this.resources),
+				this.paths,
+				this.config,
+			).verify(input.runId);
+			phase = "PLANNING";
 			await this.planner.plan(input);
 		} catch (error) {
 			const reason = error instanceof Error ? error.message : String(error);
 			this.kernel.recordControlAction({
 				runId: input.runId,
-				kind: "PLANNING_FAILURE",
+				kind: `${phase}_FAILURE`,
 				state: "FAILED",
 				detail: { reason },
 			});
 			if (this.catalog.getRun(input.runId).state === "OPEN")
-				this.kernel.blockRun(input.runId, `Planning could not produce an executable graph: ${reason}`, {
-					kind: "SYSTEM",
-					id: "planner-boundary",
-				});
+				this.kernel.blockRun(
+					input.runId,
+					`${phase === "BASELINE" ? "Baseline environment check failed" : "Planning could not produce an executable graph"}: ${reason}`,
+					{
+						kind: "SYSTEM",
+						id: "planner-boundary",
+					},
+				);
 		}
 	}
 

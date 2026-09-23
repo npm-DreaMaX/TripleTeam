@@ -11,14 +11,18 @@ import { projectPaths } from "../config/paths.ts";
 import { loadProjectConfig } from "../config/project.ts";
 import { ControlCatalog } from "../control/catalog.ts";
 import { DaemonClient } from "../daemon/client.ts";
+import { createDemoProject } from "../demo/project.ts";
 import { PiWorkerLauncher } from "../runtime/pi/launcher.ts";
 import { resolvePiCliPath } from "../runtime/pi/rpc-worker.ts";
+import { checkPiSearchTools } from "../runtime/pi/tool-preflight.ts";
 import { openControlDatabase } from "../store/database.ts";
 import { resolveRepositoryRoot } from "../workspace/git.ts";
 import { renderDashboard } from "./dashboard.ts";
 import { readDashboard } from "./dashboard-data.ts";
 import { showDashboard, withLiveDashboard } from "./monitor.ts";
 import { type OutputOptions, parseOutputOptions, renderError, renderHelp, renderResult } from "./output.ts";
+import { showShell } from "./shell.ts";
+import { WorkspaceShellBackend } from "./shell-actions.ts";
 
 const execFileAsync = promisify(execFile);
 let outputOptions: OutputOptions = parseOutputOptions([]);
@@ -58,8 +62,10 @@ function output(value: string): void {
 function usage(): string {
 	return [
 		"Usage:",
-		"  tripleteam                       Open the workspace dashboard",
+		"  tripleteam                       Open the interactive workspace",
+		"  tripleteam shell [repository]    Type a goal or /help",
 		"  tripleteam demo                  Explore the UI without an API key",
+		"  tripleteam demo create <new-directory> [immutable-python-image]",
 		"  tripleteam dashboard [repository] [run-id]",
 		"  tripleteam init [repository]",
 		'  tripleteam run "<objective>" [repository]',
@@ -69,8 +75,11 @@ function usage(): string {
 		"  tripleteam pause [repository]",
 		"  tripleteam resume [repository]",
 		"  tripleteam status [repository] [run-id]",
+		"  tripleteam why [repository] [run-id]",
 		"  tripleteam profiles [repository]",
 		"  tripleteam models [filter]",
+		"  tripleteam model <role|all> <provider/model> [reasoning]",
+		"  tripleteam settings [key [value]] (current repository; next run)",
 		"  tripleteam events [repository] [run-id]",
 		"  tripleteam messages [repository] [run-id]",
 		"  tripleteam proposals [repository] [run-id]",
@@ -255,7 +264,7 @@ async function profiles(repositoryArgument?: string): Promise<void> {
 	const config = await loadProjectConfig(repositoryRoot);
 	const launcher = new PiWorkerLauncher();
 	const roles = AGENT_ROLES.map((role) => {
-		const profile = launcher.resolveProfile(repositoryRoot, config.profiles[role], [], config.execution, role);
+		const profile = launcher.resolveProfile(repositoryRoot, config.profiles[role] ?? role, [], config.execution, role);
 		return {
 			role,
 			profile: profile.name,
@@ -442,6 +451,7 @@ async function doctor(): Promise<void> {
 	const git = await execFileAsync("git", ["--version"], { encoding: "utf8" });
 	const piCli = resolvePiCliPath();
 	await access(piCli);
+	const searchTools = await checkPiSearchTools(["grep", "find"]);
 	const database = await openControlDatabase(":memory:");
 	database.close();
 	output(
@@ -450,12 +460,20 @@ async function doctor(): Promise<void> {
 				node: process.version,
 				git: git.stdout.trim(),
 				piCli,
+				searchTools,
 				sqlite: "ok",
 			},
 			null,
 			2,
 		),
 	);
+}
+
+async function interactiveShell(repository?: string, demo = false): Promise<void> {
+	const result = await showShell(outputOptions, repository, demo);
+	// The CLI boundary exits only after the screen and diagnostic stream are restored.
+	if (result.exitCode !== undefined) process.exit(result.exitCode);
+	if (result.detached) process.exit(0);
 }
 
 async function main(argv: string[]): Promise<void> {
@@ -465,11 +483,29 @@ async function main(argv: string[]): Promise<void> {
 	if (outputOptions.watch && command !== "status" && command !== "dashboard")
 		throw new Error("--watch is available for status and dashboard");
 	switch (command) {
+		case "shell":
+			await interactiveShell(args[0]);
+			return;
 		case "dashboard":
 			await showDashboard(outputOptions, args[0], args[1]);
 			return;
 		case "demo":
-			await showDashboard(outputOptions, undefined, undefined, true);
+			if (args[0] === "create") {
+				if (!args[1] || args.length > 3)
+					throw new Error("Use tripleteam demo create <new-directory> [immutable-python-image]");
+				output(JSON.stringify(await createDemoProject(args[1], args[2]), null, 2));
+				return;
+			}
+			if (args.length) throw new Error("Use tripleteam demo, or tripleteam demo create <new-directory>");
+			if (
+				process.stdin.isTTY &&
+				process.stdout.isTTY &&
+				!outputOptions.json &&
+				!outputOptions.plain &&
+				process.env.TERM !== "dumb"
+			)
+				await interactiveShell(undefined, true);
+			else await showDashboard(outputOptions, undefined, undefined, true);
 			return;
 		case "init":
 			await init(args[0]);
@@ -495,12 +531,23 @@ async function main(argv: string[]): Promise<void> {
 		case "status":
 			await status(args[0], args[1]);
 			return;
+		case "why": {
+			const snapshot = await readDashboard(await resolveRepositoryRoot(args[0] ?? process.cwd()), args[1]);
+			output(JSON.stringify({ coordination: snapshot.coordination, ...snapshot.explanation }, null, 2));
+			return;
+		}
 		case "profiles":
 			await profiles(args[0]);
 			return;
 		case "models":
 			await models(args[0]);
 			return;
+		case "settings":
+		case "model": {
+			const backend = new WorkspaceShellBackend(await resolveRepositoryRoot(process.cwd()));
+			output(JSON.stringify(await backend.execute({ name: command, args, text: "" }), null, 2));
+			return;
+		}
 		case "events":
 		case "messages":
 		case "proposals":
@@ -524,8 +571,14 @@ async function main(argv: string[]): Promise<void> {
 			await doctor();
 			return;
 		case undefined:
-			if (process.stdout.isTTY && process.stdin.isTTY && !outputOptions.json && !outputOptions.plain) {
-				await showDashboard(outputOptions);
+			if (
+				process.stdout.isTTY &&
+				process.stdin.isTTY &&
+				!outputOptions.json &&
+				!outputOptions.plain &&
+				process.env.TERM !== "dumb"
+			) {
+				await interactiveShell();
 				return;
 			}
 			console.log(renderHelp(usage(), outputOptions.color));

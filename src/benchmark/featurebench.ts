@@ -52,12 +52,22 @@ export interface FeatureBenchPrediction {
 	task_metadata: { manifest_hash: string; run_id: string; submitted_commit: string; submitted_tree: string };
 }
 
-export function assertBenchmarkConfiguration(orchestrator: LocalOrchestrator, frozen: FrozenBenchmarkManifest): void {
+export function assertBenchmarkConfiguration(
+	orchestrator: LocalOrchestrator,
+	frozen: FrozenBenchmarkManifest,
+	instanceId?: string,
+): void {
 	const execution = orchestrator.config.execution;
 	if (!execution || execution.decisionMode !== "noninteractive") {
 		throw new Error("Benchmark runtime requires execution.decisionMode=noninteractive");
 	}
 	const manifest = frozen.manifest;
+	if (
+		instanceId &&
+		manifest.runtimeConfigHashes &&
+		hashJson(JSON.parse(JSON.stringify(orchestrator.config))) !== manifest.runtimeConfigHashes[instanceId]
+	)
+		throw new Error("Runtime checks, preparation or configuration differ from the frozen instance manifest");
 	if (hashJson(JSON.parse(JSON.stringify(execution))) !== manifest.executionConfigHash) {
 		throw new Error("Runtime execution policy differs from the frozen manifest");
 	}
@@ -90,7 +100,16 @@ export async function exportFeatureBench(input: {
 		throw new Error("Task is not in this FeatureBench manifest");
 	}
 	const artifact = await authoritativeArtifact(orchestrator, input.runId);
-	const contract = orchestrator.catalog.getRun(input.runId).goalContract as { executionPolicy?: unknown };
+	const contract = orchestrator.catalog.getRun(input.runId).goalContract as {
+		executionPolicy?: unknown;
+		runtimeConfiguration?: unknown;
+	};
+	if (
+		frozen.manifest.runtimeConfigHashes &&
+		(!contract.runtimeConfiguration ||
+			hashJson(contract.runtimeConfiguration) !== frozen.manifest.runtimeConfigHashes[task.instance_id])
+	)
+		throw new Error("Submitted run did not use the frozen full runtime configuration");
 	if (!contract.executionPolicy || hashJson(contract.executionPolicy) !== frozen.manifest.executionConfigHash) {
 		throw new Error("Submitted run did not use the frozen execution policy");
 	}

@@ -64,9 +64,16 @@ export class ContractVerifier {
 		return accepted.filter((task) => affected.has(task.id));
 	}
 
-	async bindRequirements(taskId: string, attemptId: string, baseline: string): Promise<void> {
+	async bindRequirements(taskId: string, attemptId: string, baseline: string) {
 		const task = this.catalog.getTask(taskId);
-		if (!executionPolicyFor(this.catalog.getRun(task.runId).goalContract).enableContracts) return;
+		const bindings: Array<{
+			requirement: string;
+			contractId: string;
+			version: number;
+			baseline: string;
+			evidence: ReturnType<ControlCatalog["listContractEvidence"]>;
+		}> = [];
+		if (!executionPolicyFor(this.catalog.getRun(task.runId).goalContract).enableContracts) return bindings;
 		const contract = this.catalog.getCoordinationContract(taskId);
 		for (const requirement of contract?.requires ?? []) {
 			const providers = this.catalog
@@ -81,7 +88,15 @@ export class ContractVerifier {
 			const provider = providers[0].contract as CoordinationContract;
 			const proof = await this.currentProof(provider, baseline, requirement);
 			this.kernel.bindContractConsumption(attemptId, provider.id, provider.version, baseline, proof);
+			bindings.push({
+				requirement,
+				contractId: provider.id,
+				version: provider.version,
+				baseline,
+				evidence: this.catalog.listContractEvidence(provider.id).filter((entry) => proof.includes(entry.id)),
+			});
 		}
+		return bindings;
 	}
 
 	/** Frozen published interfaces cannot silently change while their consumers keep old authority. */

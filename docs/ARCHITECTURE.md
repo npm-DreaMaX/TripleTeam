@@ -4,6 +4,8 @@
 
 A standalone CLI and local daemon for long-horizon agentic software engineering.
 
+New runs first verify the frozen integration baseline on clean source views. Scoped checks and atomic obligations compile the proposed DAG into verifiable increments. A task-revision allocation decides whether additional test design is worth its cost while preserving mandatory delivery gates. Read-only exploration observations carry Git read dependencies and Pi-resolved context identity; their reuse never substitutes for acceptance evidence. See [research section 21](../调研.md) and [acceptance walkthrough](ACCEPTANCE.md).
+
 A standalone, local-first runtime for reliably delegating long-horizon repository changes. It supports adaptive single- or multi-Agent execution, crash recovery, Git-native transactional integration and evidence-gated delivery on top of the Pi Agent Runtime.
 
 A developer supplies a repository-level goal, acceptance checks and a resource budget. TripleTeam keeps the task graph, candidate code, failure evidence and delivery obligations across executions. Successful runs publish a normal Git delivery ref plus an exact evidence manifest. Incomplete runs retain a durable `BLOCKED` or `CANCELLED` report with their stopping reason.
@@ -32,6 +34,7 @@ The product includes four overrideable profile templates:
 - `planner`: read-only task-graph proposal producer.
 - `implementer`: the only default writer, with one isolated worktree per Attempt.
 - `reviewer`: independent read-only review selected by the acceptance contract.
+- `verifier`: read-only specification design before implementation; a separate reviewer session critiques its executable probes. Plans and evaluation batches are persisted and gated by the Kernel. See [independent verification](INDEPENDENT_VERIFICATION.md).
 
 These are templates, not four resident teammates. A run creates zero or more instances on demand. User and trusted project Pi Agent definitions can override these names or add new profiles. `PLAN / EXPLORE / IMPLEMENT / REVIEW` is stored separately from the selected Pi profile identity.
 

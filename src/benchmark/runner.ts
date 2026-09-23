@@ -12,7 +12,7 @@ export async function runFeatureBench(input: {
 	outputDirectory: string;
 }) {
 	const { orchestrator, task, frozen, outputDirectory } = input;
-	assertBenchmarkConfiguration(orchestrator, frozen);
+	assertBenchmarkConfiguration(orchestrator, frozen, task.instance_id);
 	if (frozen.manifest.benchmark !== "featurebench" || !frozen.manifest.instanceIds.includes(task.instance_id)) {
 		throw new Error("Task does not belong to this FeatureBench experiment");
 	}

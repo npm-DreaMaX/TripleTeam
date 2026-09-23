@@ -695,4 +695,23 @@ CREATE INDEX contract_evidence_tree_idx ON contract_evidence(contract_id,tree_ha
 CREATE INDEX control_actions_run_idx ON control_actions(run_id,kind);
 `,
 	},
+	{
+		version: 9,
+		name: "independent-specification-assurance",
+		sql: String.raw`
+CREATE TABLE assurance_plans (
+ id TEXT PRIMARY KEY, run_id TEXT NOT NULL REFERENCES runs(id),
+ task_id TEXT NOT NULL REFERENCES tasks(id), task_revision_id TEXT NOT NULL UNIQUE REFERENCES task_revisions(id),
+ baseline_commit TEXT NOT NULL, plan_json TEXT NOT NULL, created_at TEXT NOT NULL
+) STRICT;
+CREATE INDEX assurance_plans_run_idx ON assurance_plans(run_id,task_id);
+CREATE TABLE assurance_evaluations (
+ id TEXT PRIMARY KEY, plan_id TEXT NOT NULL REFERENCES assurance_plans(id),
+ tree_hash TEXT NOT NULL, subject_kind TEXT NOT NULL, subject_id TEXT NOT NULL,
+ state TEXT NOT NULL CHECK(state IN ('STARTED','PASSED','FAILED','ERROR')), created_at TEXT NOT NULL
+) STRICT;
+CREATE INDEX assurance_evaluation_subject_idx ON assurance_evaluations(plan_id,tree_hash,subject_kind,subject_id);
+CREATE INDEX check_runs_assurance_idx ON check_runs(task_id,subject_kind,subject_id,tree_hash,check_kind);
+`,
+	},
 ];
